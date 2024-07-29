@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='res/favicon.ico') }}" type="image/x-icon">
+
+    <title>{{ test_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='test_screen.css') }}">
+</head>
+<body>
+    <img src="{{ url_for('static', filename='res/logo.png') }}" class="logo" alt="Logo">
+
+    <div class="video-container">
+        <video class="test_screen_video" autoplay muted loop>
+            <source src="{{ url_for('static', filename='res/test_background.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    
+    <div class="content">
+        <h1 class="test_heading">{{ test_name }}</h1>
+        <div class="test-container">
+            <form method="POST" action="/test/{{ test_name }}" onsubmit="return validateForm()">
+                {% for question in questions %}
+                    <div class="question">
+                        <p>{{ loop.index }}. {{ question.question }}</p>
+                        <input type="text" name="{{ question.question }}"
+                            value="{{ user_answers.get(question.question, '') }}"
+                            {% if retry_mode %}
+                                {% if results[question.question] is defined and results[question.question].is_correct %}
+                                    style="background-color: lightgreen;"
+                                {% else %}
+                                    style="background-color: lightcoral;"
+                                {% endif %}
+                            {% endif %}>
+                    </div>
+                {% endfor %}
+                <button type="submit" class="submit_test">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            var inputs = document.querySelectorAll('input[type="text"]');
+            for (var i = 0; i < inputs.length; i++) {
+                if (inputs[i].value.trim() === '') {
+                    alert('Please fill out all the fields before submitting.');
+                    return false; // Prevent form submission
+                }
+            }
+            return true; // Allow form submission
+        }
+    </script>
+</body>
+</html>

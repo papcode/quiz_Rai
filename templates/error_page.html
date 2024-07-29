@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='res/favicon.ico') }}" type="image/x-icon">
+
+    <title>Oops!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='error_page.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
+
+</head>
+<body>
+    <img src="{{ url_for('static', filename='res/logo.png') }}" class="logo" alt="Logo">
+
+    <h1 class="error_heading">Oops!</h1>
+    <p>You have {{ incorrect_count }} questions wrong.</p>
+    <div class="button-container">
+        <!-- JSON encode user answers for retry URL -->
+        <a href="{{ url_for('test', test_name=test_name, retry=True, user_answers=user_answers) }}" class="error_button">Retry</a>
+        <a href="{{ url_for('select_test') }}" class="error_button">Take Another Test</a>
+    </div>
+</body>
+</html>

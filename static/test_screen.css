@@ -1,0 +1,88 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    min-height: 100vh; /* Ensure the body covers the full viewport height */
+    margin: 0; /* Remove default margin */
+    overflow: auto; /* Allow scrolling */
+    position: relative; /* Ensure the video can be positioned absolutely */
+}
+
+.video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1; /* Ensure video is behind content */
+}
+
+.test_screen_video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the entire viewport */
+    filter: blur(10px); /* Apply blur effect */
+}
+
+.content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Start at the top of the viewport */
+    min-height: 100vh; /* Ensure content area covers full viewport height */
+    padding: 20px; /* Add padding */
+    box-sizing: border-box; /* Include padding in height calculations */
+}
+
+.test_heading {
+    font-size: 6em;
+    font-family:'Times New Roman', Times, serif;
+    margin-bottom: 20px;
+    text-decoration: underline;
+}
+
+.test-container {
+    background: rgba(255, 255, 255, 1); /* More opaque background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add subtle shadow for better visibility */
+    width: 100%; /* Ensure it takes full width */
+    max-width: 800px; /* Optional: Limit the maximum width */
+    margin-bottom: 20px; /* Add space below the form */
+}
+
+.question {
+    margin-bottom: 10px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.submit_test {
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin-top: 20px; /* Add space above the button */
+}
+
+.submit_test:hover {
+    background-color: darkblue;
+}

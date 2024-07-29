@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='res/favicon.ico') }}" type="image/x-icon">
+
+    <title>Select Test</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='select_test.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
+</head>
+<body>
+    <img src="{{ url_for('static', filename='res/logo.png') }}" class="logo" alt="Logo">
+
+    <h1 class="startup_heading">Select Quiz</h1>
+    <div class="select-test-button-container">
+        {% for test_name in test_names %}
+            <form method="GET" action="/test/{{ test_name }}">
+                <button type="submit">{{ test_name }}</button>
+            </form>
+        {% endfor %}
+    </div>
+    <div class="face-container">
+        <div class="face">
+            <div class="eyes">
+                <div class="eye"></div>
+                <div class="eye"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+document.querySelector(
+    "body").addEventListener("mousemove", eyeball);
+function eyeball() {
+    var eye = document.querySelectorAll(".eye");
+    eye.forEach(function (eye) {
+        let x =
+            eye.getBoundingClientRect().left +
+            eye.clientWidth / 2;
+
+        let y =
+            eye.getBoundingClientRect().top +
+            eye.clientHeight / 2;
+        let radian =
+            Math.atan2(event.pageX - x, event.pageY - y);
+        let rot = radian * (180 / Math.PI) * -1 + 270;
+        eye.style.transform =
+            "rotate(" + rot + "deg)";
+    });
+}
+    </script>
+</body>
+</html>

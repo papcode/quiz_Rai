@@ -1,0 +1,10 @@
+/* Common styles for logo */
+.logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100px; /* Adjust the size as needed */
+    height: auto; /* Maintain aspect ratio */
+    padding: 10px; /* Optional: Add some padding around the logo */
+    z-index: 1000; /* Ensure it stays above other elements */
+}

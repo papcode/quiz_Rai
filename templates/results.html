@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='res/favicon.ico') }}" type="image/x-icon">
+
+    <title>Quiz Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
+</head>
+<body>
+    <img src="{{ url_for('static', filename='res/logo.png') }}" class="logo" alt="Logo">
+
+    <h1>Quiz Results</h1>
+    <ul>
+        {% for question, result in results.items() %}
+            <li>
+                {{ question }} - Your Answer: {{ result.user_answer }} - 
+                {% if result.is_correct %}
+                    <span style="color:green;">Correct!</span>
+                {% else %}
+                    <span style="color:red;">Incorrect! The correct answer is: {{ result.correct_answer }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('select_test') }}">Try Another Test</a>
+</body>
+</html>
