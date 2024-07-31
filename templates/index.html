@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="icon" href="{{ url_for('static', filename='res/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
 
     <title>{{ test_name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='test_screen.css') }}">
 </head>
 <body>
-    <img src="{{ url_for('static', filename='res/logo.png') }}" class="logo" alt="Logo">
+    <img src="{{ url_for('static', filename='image/logo.png') }}" class="logo" alt="Logo">
 
     <div class="video-container">
         <video class="test_screen_video" autoplay muted loop>
-            <source src="{{ url_for('static', filename='res/test_background.mp4') }}" type="video/mp4">
+            <source src="{{ url_for('static', filename='video/test_background.mp4') }}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
@@ -41,16 +41,36 @@
     </div>
 
     <script>
-        function validateForm() {
-            var inputs = document.querySelectorAll('input[type="text"]');
-            for (var i = 0; i < inputs.length; i++) {
-                if (inputs[i].value.trim() === '') {
-                    alert('Please fill out all the fields before submitting.');
-                    return false; // Prevent form submission
-                }
-            }
-            return true; // Allow form submission
+function validateForm() {
+    var inputs = document.querySelectorAll('input[type="text"]');
+    var isValid = true; // Flag to track form validity
+
+    // Remove previous error highlights
+    inputs.forEach(function(input) {
+        input.style.border = ''; // Reset border
+        input.nextElementSibling?.remove(); // Remove any existing error messages
+    });
+
+    inputs.forEach(function(input) {
+        if (input.value.trim() === '') {
+            input.style.border = '2px solid red'; // Highlight empty fields with a red border
+            
+            // Create and display an error message below the field
+            var errorMessage = document.createElement('span');
+            errorMessage.textContent = 'This field is required.';
+            errorMessage.style.color = 'red';
+            errorMessage.style.fontSize = 'small';
+            errorMessage.style.display = 'block';
+            errorMessage.style.marginTop = '5px';
+            input.parentNode.appendChild(errorMessage);
+
+            isValid = false; // Set flag to false if any field is empty
         }
+    });
+
+    return isValid; // Allow or prevent form submission based on the validity
+}
+
     </script>
 </body>
 </html>

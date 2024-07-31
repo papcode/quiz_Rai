@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="icon" href="{{ url_for('static', filename='res/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
 
     <title>Congratulations!</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='congrats.css') }}">
 </head>
 <body>
-    <img src="{{ url_for('static', filename='res/logo.png') }}" class="logo" alt="Logo">
+    <img src="{{ url_for('static', filename='image/logo.png') }}" class="logo" alt="Logo">
 
     <div class="video-container">
         <video class="congratulations_video" autoplay muted loop>
-            <source src="{{ url_for('static', filename='res/congratulations.mp4') }}" type="video/mp4">
+            <source src="{{ url_for('static', filename='video/congratulations.mp4') }}" type="video/mp4">
             Your browser does not support the video tag.
         </video>
     </div>
@@ -23,7 +23,7 @@
 
     <!-- Add the audio element to play the mp3 file -->
     <audio class="congrats_audio" autoplay>
-        <source src="{{ url_for('static', filename='res/congratulations.mp3') }}" type="audio/mpeg">
+        <source src="{{ url_for('static', filename='audio/congratulations.mp3') }}" type="audio/mpeg">
         Your browser does not support the audio tag.
     </audio>
 

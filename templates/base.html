@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Quiz Application{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    {% block additional_css %}{% endblock %}
+</head>
+<body>
+    {% if session.get('student_id') %}
+    <div class="top-bar">
+        <div class="left">
+            <img src="{{ url_for('static', filename='image/logo.png') }}" class="logo" alt="Logo">
+            <span class="app-name">QUIZ-APPLICATION</span>
+        </div>
+        <div class="right">
+            <form action="{{ url_for('auth.logout') }}" method="post">
+                <input type="submit" value="Logout" class="logout-button">
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</body>
+</html>

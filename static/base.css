@@ -1,0 +1,57 @@
+/* base.css */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Top Bar Styles */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: green;
+    color: white;
+    padding: 0.5rem 1rem;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.top-bar .left {
+    display: flex;
+    align-items: center;
+}
+
+.top-bar .logo {
+    width: 100px; /* Adjust size as needed */
+    height: auto;
+    margin-right: 10px; /* Space between logo and text */
+}
+
+.top-bar .app-name {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.top-bar .right {
+    display: flex;
+    align-items: center;
+}
+
+.top-bar .logout-button {
+    background-color: white;
+    color: green;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.top-bar .logout-button:hover {
+    background-color: lightgray;
+}
