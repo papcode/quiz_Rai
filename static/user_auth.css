@@ -1,7 +1,7 @@
 /* user_auth.css */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
+    background-color: #ccffcc; /* Light green background color */
     display: flex;
     justify-content: center;
     align-items: center;

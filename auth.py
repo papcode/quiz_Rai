@@ -3,6 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from config.config_reader import load_config
+import re
+import logging
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)  # Consider changing to INFO for production
@@ -26,25 +28,42 @@ try:
 except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
 
+def is_valid_email(email):
+    # Simple regex for email validation
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(email_regex, email) is not None
+
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         student_id = request.form['student_id']
+        email = request.form['email']
         password = generate_password_hash(request.form['password'])
+        
+        if not is_valid_email(email):
+            flash('Invalid email format')
+            return render_template('register.html')
+        
         try:
             if users_collection.find_one({'student_id': student_id}):
                 flash('Student ID already exists')
                 logger.warning(f"Registration attempt with existing Student ID: {student_id}")
                 return render_template('register.html')
-            users_collection.insert_one({'student_id': student_id, 'password': password})
+            if users_collection.find_one({'email': email}):
+                flash('Email already exists')
+                logger.warning(f"Registration attempt with existing Email: {email}")
+                return render_template('register.html')
+            users_collection.insert_one({'student_id': student_id, 'email': email, 'password': password})
             flash('Registration successful! Please login.')
-            logger.info(f"New user registered with Student ID: {student_id}")
+            logger.info(f"New user registered with Student ID: {student_id} and Email: {email}")
             return redirect(url_for('auth.login'))
         except Exception as e:
             logger.error(f"Error during registration: {e}")
             flash('An error occurred during registration. Please try again.')
             return render_template('register.html')
+    
     return render_template('register.html')
+
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
