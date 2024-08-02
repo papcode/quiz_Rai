@@ -4,10 +4,11 @@ from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from config.config_reader import load_config
 import re
-import logging
+from email_utils import send_reset_email
+from itsdangerous import URLSafeTimedSerializer as Serializer  # Import Serializer for token generation
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)  # Consider changing to INFO for production
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint('auth', __name__)
@@ -17,19 +18,21 @@ config = load_config()
 mongo_uri = config['MONGO_URI']
 database_name = config['DATABASE_NAME']
 collection_name = config['COLLECTION_NAME']
+secret_key = config['SECRET_KEY']
+password_reset_salt = 'password-reset-salt'  # Define your salt
 
 try:
-    # Connect to MongoDB with a timeout
-    logger.info(f"Connecting to MongoDB with URI: {mongo_uri}")
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # 5 seconds timeout
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
     db = client[database_name]
     users_collection = db[collection_name]
     logger.info("Successfully connected to MongoDB")
 except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
 
+# Initialize URLSafeTimedSerializer
+s = Serializer(secret_key)
+
 def is_valid_email(email):
-    # Simple regex for email validation
     email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(email_regex, email) is not None
 
@@ -64,7 +67,6 @@ def register():
     
     return render_template('register.html')
 
-
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -91,10 +93,46 @@ def login():
             return render_template('login.html')
     return render_template('login.html')
 
-
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.pop('student_id', None)
     flash('You have been logged out.')
     logger.info("User logged out")
     return redirect(url_for('auth.login'))
+
+@auth_bp.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = users_collection.find_one({'email': email})
+        if user:
+            token = s.dumps(email, salt=password_reset_salt)  # Generate token
+            send_reset_email(user, token)  # Pass token to send_reset_email
+            flash('Password reset email sent!')
+            return redirect(url_for('auth.login'))
+        else:
+            flash('No account found with that email.')
+    return render_template('forgot_password.html')
+
+@auth_bp.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        email = s.loads(token, salt=password_reset_salt, max_age=3600)
+    except:
+        flash('The password reset link is invalid or has expired.')
+        return redirect(url_for('auth.forgot_password'))
+    
+    if request.method == 'POST':
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        
+        if password != confirm_password:
+            flash('Passwords do not match.')
+            return render_template('reset_password.html', token=token)
+        
+        hashed_password = generate_password_hash(password)
+        users_collection.update_one({'email': email}, {'$set': {'password': hashed_password}})
+        flash('Your password has been updated!')
+        return redirect(url_for('auth.login'))
+    
+    return render_template('reset_password.html', token=token)

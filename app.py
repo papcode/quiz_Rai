@@ -1,26 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
-import configparser
 import openpyxl
 import json
 from config.config_reader import load_config
 from auth import auth_bp  # Import the auth Blueprint
+from email_utils import init_email_utils  # Import the email utilities
 
+# Load configuration
 config = load_config()
 mongo_uri = config['MONGO_URI']
 database_name = config['DATABASE_NAME']
 collection_name = config['COLLECTION_NAME']
 secret_key = config['SECRET_KEY']
+mail_config = {
+    'MAIL_SERVER': config['MAIL_SERVER'],
+    'MAIL_PORT': config['MAIL_PORT'],
+    'MAIL_USERNAME': config['MAIL_USERNAME'],
+    'MAIL_PASSWORD': config['MAIL_PASSWORD'],
+    'MAIL_USE_TLS': config['MAIL_USE_TLS'],
+    'MAIL_USE_SSL': config['MAIL_USE_SSL'],
+    'MAIL_DEFAULT_SENDER': config['MAIL_DEFAULT_SENDER']
+}
 
+# Initialize Flask app
 app = Flask(__name__)
 app.secret_key = secret_key
 
+# Initialize MongoDB connection
 client = MongoClient(mongo_uri)
 db = client[database_name]
 users_collection = db[collection_name]
 
-app.register_blueprint(auth_bp)  # Register the auth Blueprint
+# Initialize email utilities
+app.config.update(mail_config)
+init_email_utils(app)
+
+# Register the auth Blueprint
+app.register_blueprint(auth_bp, url_prefix='/auth')  # Ensure the URL prefix is correct
 
 # Load the sheet names from the Excel file
 def get_test_names(filename):
@@ -42,14 +59,14 @@ def load_questions(filename, sheet_name):
 @app.route('/')
 def select_test():
     if 'student_id' not in session:
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login'))  # Correctly use 'auth.login'
     test_names = get_test_names('questions.xlsx')
     return render_template('select_test.html', test_names=test_names)
 
 @app.route('/test/<test_name>', methods=['GET', 'POST'])
 def test(test_name):
     if 'student_id' not in session:
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login'))  # Correctly use 'auth.login'
     
     questions = load_questions('questions.xlsx', test_name)
     results = {}
@@ -104,7 +121,7 @@ def test(test_name):
 @app.route('/error_page')
 def error_page():
     if 'student_id' not in session:
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login'))  # Correctly use 'auth.login'
 
     incorrect_count = request.args.get('incorrect_count', 0, type=int)
     test_name = request.args.get('test_name', '')
@@ -116,7 +133,7 @@ def error_page():
 @app.route('/congratulations')
 def congratulations():
     if 'student_id' not in session:
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login'))  # Correctly use 'auth.login'
     return render_template('congratulations.html')
 
 if __name__ == '__main__':
