@@ -1,6 +1,8 @@
 from pymongo import MongoClient
+import logging
 from config.config_reader import load_config
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def test_mongo_connection():
     config = load_config()
