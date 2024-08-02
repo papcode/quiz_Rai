@@ -52,19 +52,26 @@ def login():
         student_id = request.form['student_id']
         password = request.form['password']
         try:
+            logger.debug(f"Attempting login for Student ID: {student_id}")
             user = users_collection.find_one({'student_id': student_id})
-            if user and check_password_hash(user['password'], password):
-                session['student_id'] = student_id
-                logger.info(f"User logged in with Student ID: {student_id}")
-                return redirect(url_for('select_test'))  # Adjust to your actual quiz route
+            if user:
+                logger.debug(f"User found: {user}")
+                if check_password_hash(user['password'], password):
+                    session['student_id'] = student_id
+                    logger.info(f"User logged in with Student ID: {student_id}")
+                    return redirect(url_for('select_test'))  # Adjust to your actual quiz route
+                else:
+                    logger.warning(f"Password mismatch for Student ID: {student_id}")
+            else:
+                logger.warning(f"No user found with Student ID: {student_id}")
             flash('Invalid credentials')
-            logger.warning(f"Login failed for Student ID: {student_id}")
             return render_template('login.html')
         except Exception as e:
             logger.error(f"Error during login: {e}")
             flash('An error occurred during login. Please try again.')
             return render_template('login.html')
     return render_template('login.html')
+
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
