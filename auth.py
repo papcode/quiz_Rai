@@ -17,7 +17,9 @@ database_name = config['DATABASE_NAME']
 collection_name = config['COLLECTION_NAME']
 
 try:
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # Set a 5-second timeout
+    # Connect to MongoDB with a timeout
+    logger.info(f"Connecting to MongoDB with URI: {mongo_uri}")
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)  # 5 seconds timeout
     db = client[database_name]
     users_collection = db[collection_name]
     logger.info("Successfully connected to MongoDB")
