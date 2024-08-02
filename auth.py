@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from config.config_reader import load_config
@@ -21,8 +21,10 @@ def register():
         student_id = request.form['student_id']
         password = generate_password_hash(request.form['password'])
         if users_collection.find_one({'student_id': student_id}):
-            return 'Student ID already exists'
+            flash('Student ID already exists')
+            return render_template('register.html')
         users_collection.insert_one({'student_id': student_id, 'password': password})
+        flash('Registration successful! Please login.')
         return redirect(url_for('auth.login'))
     return render_template('register.html')
 
@@ -35,12 +37,12 @@ def login():
         if user and check_password_hash(user['password'], password):
             session['student_id'] = student_id
             return redirect(url_for('select_test'))  # Adjust to your actual quiz route
-        return 'Invalid credentials'
+        flash('Invalid credentials')
+        return render_template('login.html')
     return render_template('login.html')
-
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.pop('student_id', None)
+    flash('You have been logged out.')
     return redirect(url_for('auth.login'))
-
