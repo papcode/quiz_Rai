@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from config.config_reader import load_config
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)  # Consider changing to INFO for production
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint('auth', __name__)
