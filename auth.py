@@ -6,6 +6,13 @@ from config.config_reader import load_config
 import re
 from email_utils import send_reset_email
 from itsdangerous import URLSafeTimedSerializer as Serializer  # Import Serializer for token generation
+from flask import send_from_directory
+from flask import current_app, send_file, abort
+import pandas as pd
+from werkzeug.utils import secure_filename
+
+import os
+
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -42,11 +49,11 @@ def register():
         student_id = request.form['student_id']
         email = request.form['email']
         password = generate_password_hash(request.form['password'])
-        
+
         if not is_valid_email(email):
             flash('Invalid email format')
             return render_template('register.html')
-        
+
         try:
             if users_collection.find_one({'student_id': student_id}):
                 flash('Student ID already exists')
@@ -56,7 +63,15 @@ def register():
                 flash('Email already exists')
                 logger.warning(f"Registration attempt with existing Email: {email}")
                 return render_template('register.html')
-            users_collection.insert_one({'student_id': student_id, 'email': email, 'password': password})
+            
+            # Insert the new user with the role 'student'
+            users_collection.insert_one({
+                'student_id': student_id,
+                'email': email,
+                'password': password,
+                'role': 'student'  # Assign the role of student
+            })
+            
             flash('Registration successful! Please login.')
             logger.info(f"New user registered with Student ID: {student_id} and Email: {email}")
             return redirect(url_for('auth.login'))
@@ -64,8 +79,9 @@ def register():
             logger.error(f"Error during registration: {e}")
             flash('An error occurred during registration. Please try again.')
             return render_template('register.html')
-    
+
     return render_template('register.html')
+
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -79,8 +95,13 @@ def login():
                 logger.debug(f"User found: {user}")
                 if check_password_hash(user['password'], password):
                     session['student_id'] = student_id
+                    session['role'] = user.get('role')
                     logger.info(f"User logged in with Student ID: {student_id}")
-                    return redirect(url_for('select_test'))  # Adjust to your actual quiz route
+                    
+                    if user.get('role') == 'student':
+                        return redirect(url_for('select_test'))  # Adjust to your actual quiz route
+                    elif user.get('role') == 'superAdmin':
+                        return redirect(url_for('auth.admin_side'))
                 else:
                     logger.warning(f"Password mismatch for Student ID: {student_id}")
             else:
@@ -97,8 +118,9 @@ def login():
 def logout():
     session.pop('student_id', None)
     flash('You have been logged out.')
-    logger.info("User logged out")
+    logger.info('User logged out.')
     return redirect(url_for('auth.login'))
+
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
@@ -136,3 +158,51 @@ def reset_password(token):
         return redirect(url_for('auth.login'))
     
     return render_template('reset_password.html', token=token)
+
+
+@auth_bp.route('/admin_side', methods=['GET'])
+def admin_side():
+    if 'role' in session and session['role'] == 'superAdmin':
+        return render_template('admin_side.html')
+    else:
+        flash('Unauthorized access')
+        return redirect(url_for('auth.login'))
+
+@auth_bp.route('/download_template', methods=['GET'])
+def download_template():
+    try:
+        # Define the file path directly in the root path
+        file_path = os.path.join(current_app.root_path, 'questions.xlsx')
+
+        # Check if the file exists
+        if not os.path.isfile(file_path):
+            logger.error(f"File not found: {file_path}")
+            abort(404, description="File not found")
+
+        # Serve the file
+        return send_from_directory(directory=current_app.root_path, 
+                                   path='questions.xlsx', 
+                                   as_attachment=True)
+    except Exception as e:
+        logger.error(f"Error downloading the file: {e}")
+        abort(500, description="An error occurred while downloading the file.")
+
+@auth_bp.route('/upload_questions', methods=['POST'])
+def upload_questions():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(url_for('auth.admin_side'))
+
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(url_for('auth.admin_side'))
+
+    if file:
+        file_path = os.path.join(current_app.root_path, 'questions.xlsx')
+        file.save(file_path)
+        flash('File uploaded and replaced successfully!')
+        return redirect(url_for('auth.admin_side'))
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'xlsx'}
