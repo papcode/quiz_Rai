@@ -18,9 +18,9 @@
         {% endwith %}
         <form method="post">
             <label for="student_id">Student ID:</label>
-            <input type="text" id="student_id" name="student_id" required><br><br>
+            <input type="text" id="student_id" name="student_id" class="input-field" required><br><br>
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br><br>
+            <input type="password" id="password" name="password" class="input-field" required><br><br>
             <input type="submit" value="Login">
         </form>
         <p><a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a></p>
