@@ -2,7 +2,6 @@
 <html>
 <head>
     <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
-
     <title>{{ test_name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='test_screen.css') }}">
@@ -22,20 +21,23 @@
         <div class="test-container">
             <form method="POST" action="/test/{{ test_name }}" onsubmit="return validateForm()">
                 {% for question in questions %}
-                    <div class="question">
-                        <p>{{ loop.index }}. {{ question.question }}</p>
-                        <input type="text" name="{{ question.question }}"
-                            value="{{ user_answers.get(question.question, '') }}"
-                            {% if retry_mode %}
-                                {% if results[question.question] is defined and results[question.question].is_correct %}
-                                    style="background-color: lightgreen;"
-                                {% else %}
-                                    style="background-color: lightcoral;"
-                                {% endif %}
-                            {% endif %}>
-                    </div>
+                <div class="question-wrapper">
+                    <p>{{ loop.index }}. {{ question.question }}</p>
+                    <input type="text" name="{{ question.question }}"
+                        value="{{ user_answers.get(question.question, '') }}"
+                        {% if retry_mode %}
+                            {% if results[question.question] is defined and results[question.question].is_correct %}
+                                style="background-color: lightgreen;"
+                            {% else %}
+                                style="background-color: lightcoral;"
+                            {% endif %}
+                        {% endif %}>
+                </div>
                 {% endfor %}
-                <button type="submit" class="submit_test">Submit</button>
+                <div class="button-container">
+                    <a href="{{ url_for('select_test') }}" class="go-back-button">Go Back</a>
+                    <button type="submit" class="submit_test">Submit</button>
+                </div>
             </form>
         </div>
     </div>
@@ -70,7 +72,6 @@ function validateForm() {
 
     return isValid; // Allow or prevent form submission based on the validity
 }
-
     </script>
 </body>
 </html>

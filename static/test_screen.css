@@ -60,15 +60,32 @@ body {
     margin-bottom: 20px; /* Add space below the form */
 }
 
-.question {
+.question-wrapper {
+    display: grid;
+    grid-template-columns: 1fr auto; /* Two columns: one for question and one for input */
+    align-items: start; /* Align items at the start */
+    gap: 10px; /* Space between question and input */
     margin-bottom: 10px;
 }
 
+.question-wrapper p {
+    margin: 0; /* Remove default margin */
+    word-break: break-word; /* Break long words to fit the container */
+}
+
 input[type="text"] {
-    width: 100%;
+    min-width: 300px; /* Set a minimum width for the input box */
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    width: 100%; /* Make input box take full width of its grid cell */
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
 }
 
 .submit_test {
@@ -80,9 +97,21 @@ input[type="text"] {
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.3s ease;
-    margin-top: 20px; /* Add space above the button */
 }
 
 .submit_test:hover {
     background-color: darkblue;
+}
+
+.go-back-button {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
 }
