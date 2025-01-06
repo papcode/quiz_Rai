@@ -39,6 +39,25 @@ def load_questions(filename, sheet_name):
             questions.append({'question': question_text, 'answer': answer_text})
     return questions
 
+# Add this new function
+def load_easy_questions(filename, num_questions):
+    workbook = openpyxl.load_workbook(filename, data_only=True)
+    if 'easy_set' not in workbook.sheetnames:
+        return []
+    
+    sheet = workbook['easy_set']
+    all_easy_questions = []
+    
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        question_text = row[0]
+        answer_text = row[1]
+        if question_text and answer_text:
+            all_easy_questions.append({'question': question_text, 'answer': answer_text})
+    
+    # Randomly select the required number of questions
+    import random
+    return random.sample(all_easy_questions, min(num_questions, len(all_easy_questions)))
+
 @app.route('/')
 def select_test():
     if 'student_id' not in session:
@@ -53,20 +72,28 @@ def test(test_name):
     
     questions = load_questions('questions.xlsx', test_name)
     results = {}
-    retry_mode = False  # Default to False
-
+    retry_mode = False
+    is_easy_mode = request.args.get('easy_mode', 'false') == 'true'
+    
+    # Initialize shown questions tracking if not exists
+    if 'shown_easy_questions' not in session:
+        session['shown_easy_questions'] = []
+    
     if request.method == 'POST':
         user_answers = request.form.to_dict()
-        incorrect_count = 0
+        incorrect_questions = []
 
-        for question in questions:
+        # Get the current questions based on mode
+        current_questions = session.get('easy_questions', questions) if is_easy_mode else questions
+
+        for question in current_questions:
             question_text = question['question']
             user_answer = user_answers.get(question_text, '').strip()
             correct_answer = str(question['answer']).strip()
 
             is_correct = user_answer.lower() == correct_answer.lower()
             if not is_correct:
-                incorrect_count += 1
+                incorrect_questions.append(question_text)
 
             results[question_text] = {
                 'user_answer': user_answer,
@@ -74,32 +101,57 @@ def test(test_name):
                 'correct_answer': correct_answer
             }
 
-        if incorrect_count == 0:
+        if not incorrect_questions:
+            # Clear all session data when all answers are correct
+            session.pop('easy_questions', None)
+            session.pop('shown_easy_questions', None)
             return redirect(url_for('congratulations'))
 
-        # Redirect with JSON encoded user answers
-        return redirect(url_for('error_page', incorrect_count=incorrect_count, test_name=test_name, user_answers=json.dumps(user_answers)))
+        # Load new easy questions for incorrect answers
+        new_easy_questions = []
+        shown_questions = session['shown_easy_questions']
+        
+        # Get all available easy questions
+        all_easy_questions = load_easy_questions('questions.xlsx', float('inf'))
+        
+        # Filter out previously shown questions
+        available_questions = [q for q in all_easy_questions 
+                             if q['question'] not in shown_questions]
+        
+        # Randomly select required number of new questions
+        import random
+        num_needed = len(incorrect_questions)
+        if available_questions:
+            selected_questions = random.sample(available_questions, 
+                                            min(num_needed, len(available_questions)))
+            new_easy_questions.extend(selected_questions)
+            
+            # Update shown questions list
+            session['shown_easy_questions'].extend(q['question'] for q in selected_questions)
+            
+        session['easy_questions'] = new_easy_questions
+        return redirect(url_for('test', test_name=test_name, easy_mode='true'))
 
-    # For GET request or retry scenario
-    user_answers = request.args.get('user_answers', '{}')
-    retry_mode = 'retry' in request.args
-    results = {}
+    if is_easy_mode:
+        questions = session.get('easy_questions', [])
+        return render_template('index.html', 
+                             questions=questions, 
+                             test_name=test_name, 
+                             results={}, 
+                             retry_mode=False, 
+                             user_answers={},
+                             is_easy_mode=True)
 
-    user_answers_dict = json.loads(user_answers) if user_answers else {}
-
-    for question in questions:
-        question_text = question['question']
-        user_answer = user_answers_dict.get(question_text, '').strip()
-        correct_answer = str(question['answer']).strip()
-
-        is_correct = user_answer.lower() == correct_answer.lower()
-        results[question_text] = {
-            'user_answer': user_answer,
-            'is_correct': is_correct,
-            'correct_answer': correct_answer
-        }
-
-    return render_template('index.html', questions=questions, test_name=test_name, results=results, retry_mode=retry_mode, user_answers=user_answers_dict)
+    # Clear session data when starting a new test
+    session.pop('easy_questions', None)
+    session.pop('shown_easy_questions', None)
+    return render_template('index.html', 
+                         questions=questions, 
+                         test_name=test_name, 
+                         results=results, 
+                         retry_mode=retry_mode, 
+                         user_answers={},
+                         is_easy_mode=False)
 
 @app.route('/error_page')
 def error_page():

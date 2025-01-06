@@ -86,3 +86,30 @@ input[type="text"] {
 .submit_test:hover {
     background-color: darkblue;
 }
+
+.encouragement-message {
+    background-color: #fff3cd;
+    border: 2px solid #ffeeba;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+    text-align: center;
+    animation: bounce 1s infinite;
+    transition: opacity 0.5s ease-out;
+}
+
+.encouragement-message h2 {
+    color: #856404;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.encouragement-message p {
+    color: #856404;
+    font-size: 18px;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}

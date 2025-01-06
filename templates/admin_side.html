@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin_side.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        
+        <!-- Display flash messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <button class="button" onclick="window.location.href='{{ url_for('auth.download_template') }}'">Download Latest Question Template</button>
+        <br>
+        
+        <!-- Form to upload file -->
+        <form action="{{ url_for('auth.upload_questions') }}" method="post" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" accept=".xlsx" style="display: none;" onchange="this.form.submit();">
+            <button type="button" class="secondary-button" onclick="document.getElementById('fileInput').click();">Upload Questions Here!</button>
+        </form>
+    </div>
+{% endblock %}

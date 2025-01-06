@@ -18,27 +18,47 @@
     </div>
     
     <div class="content">
+        {% if is_easy_mode %}
+            <div class="encouragement-message" id="encouragementMessage">
+                <h2>Don't worry! Let's try these fun questions! 😊</h2>
+                <p>You're doing great! These questions are specially picked for you!</p>
+            </div>
+        {% endif %}
+        
         <h1 class="test_heading">{{ test_name }}</h1>
-        <div class="test-container">
-            <form method="POST" action="/test/{{ test_name }}" onsubmit="return validateForm()">
-                {% for question in questions %}
-                    <div class="question">
-                        <p>{{ loop.index }}. {{ question.question }}</p>
-                        <input type="text" name="{{ question.question }}"
-                            value="{{ user_answers.get(question.question, '') }}"
-                            {% if retry_mode %}
-                                {% if results[question.question] is defined and results[question.question].is_correct %}
-                                    style="background-color: lightgreen;"
-                                {% else %}
-                                    style="background-color: lightcoral;"
-                                {% endif %}
-                            {% endif %}>
-                    </div>
-                {% endfor %}
-                <button type="submit" class="submit_test">Submit</button>
-            </form>
-        </div>
+        <form method="POST" class="test-container" onsubmit="return validateForm()">
+            {% for question in questions %}
+            <div class="question">
+                <label>{{ question.question }}</label><br>
+                <input type="text" name="{{ question.question }}" required>
+            </div>
+            {% endfor %}
+            <input type="submit" value="Submit" class="submit_test">
+        </form>
     </div>
+
+    {% if is_easy_mode %}
+    <script>
+        // Hide encouragement message after 6 seconds
+        setTimeout(function() {
+            const message = document.getElementById('encouragementMessage');
+            message.style.opacity = '1';
+            
+            // Fade out animation
+            const fadeEffect = setInterval(function() {
+                if (!message.style.opacity) {
+                    message.style.opacity = 1;
+                }
+                if (message.style.opacity > 0) {
+                    message.style.opacity -= 0.1;
+                } else {
+                    clearInterval(fadeEffect);
+                    message.style.display = 'none';
+                }
+            }, 50);
+        }, 6000);
+    </script>
+    {% endif %}
 
     <script>
 function validateForm() {
