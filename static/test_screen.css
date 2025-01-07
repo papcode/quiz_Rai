@@ -33,83 +33,89 @@ body {
 }
 
 .content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start; /* Start at the top of the viewport */
-    min-height: 100vh; /* Ensure content area covers full viewport height */
-    padding: 20px; /* Add padding */
-    box-sizing: border-box; /* Include padding in height calculations */
-}
-
-.test_heading {
-    font-size: 6em;
-    font-family:'Times New Roman', Times, serif;
-    margin-bottom: 20px;
-    text-decoration: underline;
+    padding-top: 80px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .test-container {
-    background: rgba(255, 255, 255, 1); /* More opaque background */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add subtle shadow for better visibility */
-    width: 100%; /* Ensure it takes full width */
-    max-width: 800px; /* Optional: Limit the maximum width */
-    margin-bottom: 20px; /* Add space below the form */
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
 }
 
-.question {
-    margin-bottom: 10px;
+.question-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease forwards;
 }
 
-input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.submit_test {
-    background-color: blue;
+.question-text {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.answer-btn {
+    padding: 0.8rem 2rem;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    background: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.yes-btn:hover, .yes-btn.active {
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+.no-btn:hover, .no-btn.active {
+    background: #f44336;
+    color: white;
+    border-color: #f44336;
+}
+
+.submit-btn {
+    margin-top: 2rem;
+    padding: 1rem 2rem;
+    background: #2196F3;
     color: white;
     border: none;
-    padding: 10px 20px;
-    font-size: 16px;
+    border-radius: 25px;
+    font-size: 1.1rem;
     cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-    margin-top: 20px; /* Add space above the button */
+    transition: background 0.3s ease;
+    align-self: center;
 }
 
-.submit_test:hover {
-    background-color: darkblue;
+.submit-btn:hover {
+    background: #1976D2;
 }
 
-.encouragement-message {
-    background-color: #fff3cd;
-    border: 2px solid #ffeeba;
-    border-radius: 10px;
-    padding: 15px;
-    margin: 20px 0;
-    text-align: center;
-    animation: bounce 1s infinite;
-    transition: opacity 0.5s ease-out;
-}
-
-.encouragement-message h2 {
-    color: #856404;
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-.encouragement-message p {
-    color: #856404;
-    font-size: 18px;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
+/* Animation for question cards */
+.question-card:nth-child(1) { animation-delay: 0.1s; }
+.question-card:nth-child(2) { animation-delay: 0.2s; }
+.question-card:nth-child(3) { animation-delay: 0.3s; }
+.question-card:nth-child(4) { animation-delay: 0.4s; }
+/* Add more if needed */

@@ -1,28 +1,87 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="icon" href="{{ url_for('static', filename='res/favicon.ico') }}" type="image/x-icon">
+{% extends "base.html" %}
 
-    <title>Quiz Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
-</head>
-<body>
-    <img src="{{ url_for('static', filename='res/logo.png') }}" class="logo" alt="Logo">
+{% block additional_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
 
-    <h1>Quiz Results</h1>
-    <ul>
-        {% for question, result in results.items() %}
-            <li>
-                {{ question }} - Your Answer: {{ result.user_answer }} - 
-                {% if result.is_correct %}
-                    <span style="color:green;">Correct!</span>
-                {% else %}
-                    <span style="color:red;">Incorrect! The correct answer is: {{ result.correct_answer }}</span>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('select_test') }}">Try Another Test</a>
-</body>
-</html>
+{% block content %}
+<div class="results-container">
+    <div class="personality-card">
+        <div class="personality-header">
+            <h1>Your Personality Type</h1>
+            <div class="personality-type">{{ personality_type }}</div>
+        </div>
+        
+        <div class="personality-traits">
+            {% if personality_type == "HIGH D" %}
+                <h2>Extroverted + Task Oriented</h2>
+                <div class="trait-icons">
+                    <div class="trait-icon">
+                        <i class="fas fa-bolt"></i>
+                        <span>Direct</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-flag"></i>
+                        <span>Decisive</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Driven</span>
+                    </div>
+                </div>
+            {% elif personality_type == "HIGH I" %}
+                <h2>Extroverted + People Oriented</h2>
+                <div class="trait-icons">
+                    <div class="trait-icon">
+                        <i class="fas fa-users"></i>
+                        <span>Interactive</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-star"></i>
+                        <span>Influential</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-comments"></i>
+                        <span>Inspiring</span>
+                    </div>
+                </div>
+            {% elif personality_type == "HIGH S" %}
+                <h2>Introverted + People Oriented</h2>
+                <div class="trait-icons">
+                    <div class="trait-icon">
+                        <i class="fas fa-heart"></i>
+                        <span>Supportive</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Stable</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-handshake"></i>
+                        <span>Steady</span>
+                    </div>
+                </div>
+            {% else %}
+                <h2>Introverted + Task Oriented</h2>
+                <div class="trait-icons">
+                    <div class="trait-icon">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Careful</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Correct</span>
+                    </div>
+                    <div class="trait-icon">
+                        <i class="fas fa-tasks"></i>
+                        <span>Compliant</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <a href="{{ url_for('test', test_number=1) }}" class="return-btn">Take Test Again</a>
+</div>
+{% endblock %}

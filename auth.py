@@ -36,7 +36,7 @@ def login():
         user = users_collection.find_one({'student_id': student_id})
         if user and check_password_hash(user['password'], password):
             session['student_id'] = student_id
-            return redirect(url_for('select_test'))  # Adjust to your actual quiz route
+            return redirect(url_for('test', test_number=1))
         flash('Invalid credentials')
         return render_template('login.html')
     return render_template('login.html')

@@ -1,0 +1,132 @@
+.results-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.personality-card {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    width: 90%;
+    animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.personality-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.personality-header h1 {
+    color: #333;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.personality-type {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #2196F3;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-radius: 15px;
+    background: #f8f9fa;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.personality-traits {
+    text-align: center;
+}
+
+.personality-traits h2 {
+    color: #666;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.trait-icons {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.trait-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.trait-icon i {
+    font-size: 2.5rem;
+    color: #2196F3;
+    margin-bottom: 0.5rem;
+}
+
+.trait-icon span {
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.return-btn {
+    margin-top: 2rem;
+    padding: 1rem 2rem;
+    background: #2196F3;
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.return-btn:hover {
+    background: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .personality-card {
+        padding: 2rem;
+    }
+
+    .personality-type {
+        font-size: 2.5rem;
+    }
+
+    .trait-icons {
+        gap: 1rem;
+    }
+
+    .trait-icon i {
+        font-size: 2rem;
+    }
+} 

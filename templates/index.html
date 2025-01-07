@@ -1,96 +1,51 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="icon" href="{{ url_for('static', filename='image/favicon.ico') }}" type="image/x-icon">
+{% extends "base.html" %}
 
-    <title>{{ test_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='logo.css') }}">
+{% block additional_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='test_screen.css') }}">
-</head>
-<body>
-    <img src="{{ url_for('static', filename='image/logo.png') }}" class="logo" alt="Logo">
+{% endblock %}
 
-    <div class="video-container">
-        <video class="test_screen_video" autoplay muted loop>
-            <source src="{{ url_for('static', filename='video/test_background.mp4') }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    
+{% block content %}
     <div class="content">
-        {% if is_easy_mode %}
-            <div class="encouragement-message" id="encouragementMessage">
-                <h2>Don't worry! Let's try these fun questions! 😊</h2>
-                <p>You're doing great! These questions are specially picked for you!</p>
-            </div>
-        {% endif %}
-        
-        <h1 class="test_heading">{{ test_name }}</h1>
         <form method="POST" class="test-container" onsubmit="return validateForm()">
             {% for question in questions %}
-            <div class="question">
-                <label>{{ question.question }}</label><br>
-                <input type="text" name="{{ question.question }}" required>
+            <div class="question-card">
+                <p class="question-text">{{ question.question }}</p>
+                <div class="button-group">
+                    <button type="button" class="answer-btn yes-btn" 
+                            onclick="selectAnswer(this, '{{ question.question }}', 'yes')">Yes</button>
+                    <button type="button" class="answer-btn no-btn" 
+                            onclick="selectAnswer(this, '{{ question.question }}', 'no')">No</button>
+                </div>
+                <input type="hidden" name="{{ question.question }}" id="input-{{ question.question }}">
             </div>
             {% endfor %}
-            <input type="submit" value="Submit" class="submit_test">
+            <button type="submit" class="submit-btn">Next</button>
         </form>
     </div>
 
-    {% if is_easy_mode %}
     <script>
-        // Hide encouragement message after 6 seconds
-        setTimeout(function() {
-            const message = document.getElementById('encouragementMessage');
-            message.style.opacity = '1';
+        function selectAnswer(btn, question, answer) {
+            // Remove active class from all buttons in this group
+            const parentCard = btn.closest('.question-card');
+            parentCard.querySelectorAll('.answer-btn').forEach(button => {
+                button.classList.remove('active');
+            });
             
-            // Fade out animation
-            const fadeEffect = setInterval(function() {
-                if (!message.style.opacity) {
-                    message.style.opacity = 1;
-                }
-                if (message.style.opacity > 0) {
-                    message.style.opacity -= 0.1;
-                } else {
-                    clearInterval(fadeEffect);
-                    message.style.display = 'none';
-                }
-            }, 50);
-        }, 6000);
-    </script>
-    {% endif %}
-
-    <script>
-function validateForm() {
-    var inputs = document.querySelectorAll('input[type="text"]');
-    var isValid = true; // Flag to track form validity
-
-    // Remove previous error highlights
-    inputs.forEach(function(input) {
-        input.style.border = ''; // Reset border
-        input.nextElementSibling?.remove(); // Remove any existing error messages
-    });
-
-    inputs.forEach(function(input) {
-        if (input.value.trim() === '') {
-            input.style.border = '2px solid red'; // Highlight empty fields with a red border
+            // Add active class to clicked button
+            btn.classList.add('active');
             
-            // Create and display an error message below the field
-            var errorMessage = document.createElement('span');
-            errorMessage.textContent = 'This field is required.';
-            errorMessage.style.color = 'red';
-            errorMessage.style.fontSize = 'small';
-            errorMessage.style.display = 'block';
-            errorMessage.style.marginTop = '5px';
-            input.parentNode.appendChild(errorMessage);
-
-            isValid = false; // Set flag to false if any field is empty
+            // Set hidden input value
+            document.getElementById('input-' + question).value = answer;
         }
-    });
 
-    return isValid; // Allow or prevent form submission based on the validity
-}
-
+        function validateForm() {
+            const unanswered = document.querySelectorAll('.question-card').length - 
+                             document.querySelectorAll('.answer-btn.active').length;
+            if (unanswered > 0) {
+                alert('Please answer all questions before proceeding.');
+                return false;
+            }
+            return true;
+        }
     </script>
-</body>
-</html>
+{% endblock %}

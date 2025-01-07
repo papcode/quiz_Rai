@@ -60,100 +60,72 @@ def load_easy_questions(filename, num_questions):
     import random
     return random.sample(all_easy_questions, min(num_questions, len(all_easy_questions)))
 
-@app.route('/')
-def select_test():
-    if 'student_id' not in session:
-        return redirect(url_for('auth.login'))
-    test_names = get_test_names('questions.xlsx')
-    return render_template('select_test.html', test_names=test_names)
+def determine_personality(test_answers):
+    personality_scores = {
+        'HIGH D': sum(1 for ans in test_answers['test1'] if ans == 'yes'),
+        'HIGH I': sum(1 for ans in test_answers['test2'] if ans == 'yes'),
+        'HIGH S': sum(1 for ans in test_answers['test3'] if ans == 'yes'),
+        'HIGH C': sum(1 for ans in test_answers['test4'] if ans == 'yes')
+    }
+    return max(personality_scores.items(), key=lambda x: x[1])[0]
 
-@app.route('/test/<test_name>', methods=['GET', 'POST'])
-def test(test_name):
+@app.route('/')
+def home():
+    if 'student_id' not in session:
+        return redirect(url_for('auth.login'))
+    return redirect(url_for('test', test_number=1))
+
+@app.route('/test/<int:test_number>', methods=['GET', 'POST'])
+def test(test_number):
     if 'student_id' not in session:
         return redirect(url_for('auth.login'))
     
-    questions = load_questions('questions.xlsx', test_name)
-    results = {}
-    retry_mode = False
-    is_easy_mode = request.args.get('easy_mode', 'false') == 'true'
+    if test_number < 1 or test_number > 4:
+        return redirect(url_for('test', test_number=1))
     
-    # Initialize shown questions tracking if not exists
-    if 'shown_easy_questions' not in session:
-        session['shown_easy_questions'] = []
+    # Load questions for the current test
+    sheet_name = f'TEST{test_number}'
+    questions = load_questions('questions.xlsx', sheet_name)
     
     if request.method == 'POST':
-        user_answers = request.form.to_dict()
-        incorrect_questions = []
-
-        # Get the current questions based on mode
-        current_questions = session.get('easy_questions', questions) if is_easy_mode else questions
-
-        for question in current_questions:
-            question_text = question['question']
-            user_answer = user_answers.get(question_text, '').strip()
-            correct_answer = str(question['answer']).strip()
-
-            is_correct = user_answer.lower() == correct_answer.lower()
-            if not is_correct:
-                incorrect_questions.append(question_text)
-
-            results[question_text] = {
-                'user_answer': user_answer,
-                'is_correct': is_correct,
-                'correct_answer': correct_answer
-            }
-
-        if not incorrect_questions:
-            # Clear all session data when all answers are correct
-            session.pop('easy_questions', None)
-            session.pop('shown_easy_questions', None)
-            return redirect(url_for('congratulations'))
-
-        # Load new easy questions for incorrect answers
-        new_easy_questions = []
-        shown_questions = session['shown_easy_questions']
+        # Process answers
+        answers = {q['question']: request.form.get(q['question']) for q in questions}
         
-        # Get all available easy questions
-        all_easy_questions = load_easy_questions('questions.xlsx', float('inf'))
+        # Store answers in session
+        if 'test_answers' not in session:
+            session['test_answers'] = {}
+        session['test_answers'][f'test{test_number}'] = answers
         
-        # Filter out previously shown questions
-        available_questions = [q for q in all_easy_questions 
-                             if q['question'] not in shown_questions]
+        # If this was the last test, go to results
+        if test_number == 4:
+            return redirect(url_for('results'))
         
-        # Randomly select required number of new questions
-        import random
-        num_needed = len(incorrect_questions)
-        if available_questions:
-            selected_questions = random.sample(available_questions, 
-                                            min(num_needed, len(available_questions)))
-            new_easy_questions.extend(selected_questions)
-            
-            # Update shown questions list
-            session['shown_easy_questions'].extend(q['question'] for q in selected_questions)
-            
-        session['easy_questions'] = new_easy_questions
-        return redirect(url_for('test', test_name=test_name, easy_mode='true'))
+        # Otherwise, go to next test
+        return redirect(url_for('test', test_number=test_number + 1))
+    
+    return render_template('index.html', questions=questions)
 
-    if is_easy_mode:
-        questions = session.get('easy_questions', [])
-        return render_template('index.html', 
-                             questions=questions, 
-                             test_name=test_name, 
-                             results={}, 
-                             retry_mode=False, 
-                             user_answers={},
-                             is_easy_mode=True)
-
-    # Clear session data when starting a new test
-    session.pop('easy_questions', None)
-    session.pop('shown_easy_questions', None)
-    return render_template('index.html', 
-                         questions=questions, 
-                         test_name=test_name, 
-                         results=results, 
-                         retry_mode=retry_mode, 
-                         user_answers={},
-                         is_easy_mode=False)
+@app.route('/results')
+def results():
+    if 'student_id' not in session or 'test_answers' not in session:
+        return redirect(url_for('auth.login'))
+    
+    # Calculate personality type based on answers
+    test_answers = session['test_answers']
+    personality_scores = {
+        'HIGH D': sum(1 for ans in test_answers.get('TEST1', []) if ans == 'yes'),
+        'HIGH I': sum(1 for ans in test_answers.get('TEST2', []) if ans == 'yes'),
+        'HIGH S': sum(1 for ans in test_answers.get('TEST3', []) if ans == 'yes'),
+        'HIGH C': sum(1 for ans in test_answers.get('TEST4', []) if ans == 'yes')
+    }
+    
+    # Get the personality type with the highest score
+    personality_type = max(personality_scores.items(), key=lambda x: x[1])[0]
+    
+    # Clear the test answers from session
+    session.pop('test_answers', None)
+    
+    return render_template('results.html', personality_type=personality_type)
 
 @app.route('/error_page')
 def error_page():
