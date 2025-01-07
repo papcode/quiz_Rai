@@ -7,6 +7,8 @@ import json
 from config.config_reader import load_config
 from auth import auth_bp  # Import the auth Blueprint
 
+#CHANGES
+
 config = load_config()
 mongo_uri = config['MONGO_URI']
 database_name = config['DATABASE_NAME']
