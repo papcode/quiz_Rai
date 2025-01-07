@@ -8,23 +8,37 @@
     <div class="content">
         <form method="POST" class="test-container" onsubmit="return validateForm()">
             {% for question in questions %}
-            <div class="question-card">
+            <div class="question-card" id="card-{{ loop.index0 }}">
                 <p class="question-text">{{ question.question }}</p>
                 <div class="button-group">
                     <button type="button" class="answer-btn yes-btn" 
-                            onclick="selectAnswer(this, '{{ question.question }}', 'yes')">Yes</button>
+                            onclick="selectAnswer(this, '{{ question.question }}', 'yes', {{ loop.index0 }})">Yes</button>
                     <button type="button" class="answer-btn no-btn" 
-                            onclick="selectAnswer(this, '{{ question.question }}', 'no')">No</button>
+                            onclick="selectAnswer(this, '{{ question.question }}', 'no', {{ loop.index0 }})">No</button>
                 </div>
                 <input type="hidden" name="{{ question.question }}" id="input-{{ question.question }}">
             </div>
             {% endfor %}
-            <button type="submit" class="submit-btn">Next</button>
+            <button type="submit" class="submit-btn" id="submit-btn">Next Test</button>
         </form>
     </div>
 
     <script>
-        function selectAnswer(btn, question, answer) {
+        let currentCard = 0;
+        const totalCards = document.querySelectorAll('.question-card').length;
+        
+        function initializeCards() {
+            document.querySelectorAll('.question-card').forEach((card, index) => {
+                if (index === 0) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+            updateSubmitButton();
+        }
+
+        function selectAnswer(btn, question, answer, cardIndex) {
             // Remove active class from all buttons in this group
             const parentCard = btn.closest('.question-card');
             parentCard.querySelectorAll('.answer-btn').forEach(button => {
@@ -36,16 +50,82 @@
             
             // Set hidden input value
             document.getElementById('input-' + question).value = answer;
+
+            // Animate answer selection
+            btn.classList.add('pulse');
+            setTimeout(() => {
+                btn.classList.remove('pulse');
+                // Move to next question after a short delay
+                setTimeout(() => {
+                    if (cardIndex < totalCards - 1) {
+                        moveToNextQuestion(cardIndex);
+                    } else {
+                        // This is the last question
+                        highlightSubmitButton();
+                    }
+                }, 300);
+            }, 300);
+        }
+
+        function moveToNextQuestion(currentIndex) {
+            const currentCard = document.getElementById(`card-${currentIndex}`);
+            const nextCard = document.getElementById(`card-${currentIndex + 1}`);
+
+            if (nextCard) {
+                currentCard.classList.add('slide-out');
+                currentCard.classList.remove('active');
+                
+                setTimeout(() => {
+                    currentCard.classList.add('hidden');
+                    currentCard.classList.remove('slide-out');
+                    
+                    nextCard.classList.remove('hidden');
+                    nextCard.classList.add('slide-in', 'active');
+                    
+                    setTimeout(() => {
+                        nextCard.classList.remove('slide-in');
+                    }, 300);
+                }, 300);
+            }
+            
+            currentCard = currentIndex + 1;
+            updateSubmitButton();
+        }
+
+        function highlightSubmitButton() {
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.classList.add('ready', 'highlight-button');
+            
+            // Add floating arrow pointing to submit button
+            const arrow = document.createElement('div');
+            arrow.className = 'floating-arrow';
+            arrow.innerHTML = '👇';  // You can replace this with an SVG or custom arrow
+            document.body.appendChild(arrow);
+            
+            // Scroll to submit button
+            submitBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submit-btn');
+            const answeredQuestions = document.querySelectorAll('.answer-btn.active').length;
+            
+            if (answeredQuestions === totalCards) {
+                submitBtn.classList.add('ready');
+                highlightSubmitButton();
+            }
         }
 
         function validateForm() {
-            const unanswered = document.querySelectorAll('.question-card').length - 
-                             document.querySelectorAll('.answer-btn.active').length;
+            const unanswered = totalCards - document.querySelectorAll('.answer-btn.active').length;
             if (unanswered > 0) {
                 alert('Please answer all questions before proceeding.');
                 return false;
             }
             return true;
         }
+
+        // Initialize on page load
+        window.onload = initializeCards;
     </script>
 {% endblock %}

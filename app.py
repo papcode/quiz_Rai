@@ -122,8 +122,8 @@ def results():
     # Get the personality type with the highest score
     personality_type = max(personality_scores.items(), key=lambda x: x[1])[0]
     
-    # Clear the test answers from session
-    session.pop('test_answers', None)
+    # Clear all session data
+    session.clear()
     
     return render_template('results.html', personality_type=personality_type)
 
