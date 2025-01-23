@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Sending results to administrator...</p>
+    </div>
+</div>
+
+<div class="completion-container">
+    <div class="completion-card">
+        <h1>Congratulations!</h1>
+        <p>You have successfully completed the quiz.</p>
+        <p>Your results have been sent to the administrator.</p>
+        
+        <form action="{{ url_for('auth.logout') }}" method="POST">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+</div>
+
+<style>
+.completion-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+    padding: 20px;
+}
+
+.completion-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+}
+
+h1 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+p {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.logout-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #45a049;
+}
+
+/* Loading overlay styles */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-content p {
+    color: #333;
+    font-size: 18px;
+    margin: 0;
+}
+</style>
+
+<script>
+// Show loading overlay immediately
+document.getElementById('loadingOverlay').style.display = 'flex';
+
+// Hide loading overlay after results are sent (3 seconds for demonstration)
+setTimeout(() => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}, 3000);
+</script>
+{% endblock %} 

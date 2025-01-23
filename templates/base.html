@@ -1,25 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}Quiz Application{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
-    {% block additional_css %}{% endblock %}
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    {% if session.get('student_id') %}
+    {% if session.get('username') %}
     <div class="top-bar">
         <div class="left">
             <img src="{{ url_for('static', filename='image/logo.png') }}" class="logo" alt="Logo">
             <span class="app-name">QUIZ-APPLICATION</span>
         </div>
         <div class="right">
-            <form action="{{ url_for('auth.logout') }}" method="post">
-                <input type="submit" value="Logout" class="logout-button">
+            <span class="welcome-text">Welcome, {{ session.username }}</span>
+            <form action="{{ url_for('auth.logout') }}" method="POST" style="display: inline;">
+                <button type="submit" class="logout-button">Logout</button>
             </form>
         </div>
     </div>
     {% endif %}
 
-    {% block content %}{% endblock %}
+    <main class="main-content">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="flash-message">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

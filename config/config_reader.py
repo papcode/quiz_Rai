@@ -10,7 +10,7 @@ def load_config():
     
     # Check if the configuration file exists
     if not os.path.exists(config_file):
-        raise FileNotFoundError(f"The configuration file {config_file} does not exist.")
+        raise FileNotFoundError(f"Config file not found: {config_file}")
     
     # Read the configuration file
     config.read(config_file)
@@ -35,5 +35,10 @@ def load_config():
         'MONGO_URI': mongo_uri,
         'DATABASE_NAME': database_name,
         'COLLECTION_NAME': collection_name,
-        'SECRET_KEY': secret_key
+        'SECRET_KEY': secret_key,
+        'SMTP_SERVER': config.get('email', 'SMTP_SERVER', fallback='smtp.gmail.com'),
+        'SMTP_PORT': config.get('email', 'SMTP_PORT', fallback='587'),
+        'SENDER_EMAIL': config.get('email', 'SENDER_EMAIL', fallback=''),
+        'SENDER_PASSWORD': config.get('email', 'SENDER_PASSWORD', fallback=''),
+        'ADMIN_EMAIL': config.get('email', 'ADMIN_EMAIL', fallback='')
     }

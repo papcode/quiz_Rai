@@ -1,8 +1,18 @@
 /* base.css */
 
-body {
+/* Reset and base styles */
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
     font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    margin-top: 60px; /* Space for fixed top bar */
 }
 
 /* Top Bar Styles */
@@ -18,6 +28,7 @@ body {
     top: 0;
     left: 0;
     z-index: 1000;
+    height: 60px;
 }
 
 .top-bar .left {
@@ -26,32 +37,104 @@ body {
 }
 
 .top-bar .logo {
-    width: 100px; /* Adjust size as needed */
-    height: auto;
-    margin-right: 10px; /* Space between logo and text */
+    height: 50px;
+    width: auto;
+    margin-right: 10px;
 }
 
 .top-bar .app-name {
     font-weight: bold;
     font-size: 1.5rem;
+    color: white;
 }
 
 .top-bar .right {
     display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+.welcome-text {
+    color: white;
+    margin-right: 1rem;
 }
 
 .top-bar .logout-button {
     background-color: white;
     color: green;
     border: none;
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 8px 16px;
+    font-size: 14px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 4px;
     transition: background-color 0.3s ease;
 }
 
 .top-bar .logout-button:hover {
-    background-color: lightgray;
+    background-color: #f0f0f0;
+}
+
+/* Main content styles */
+.main-content {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Flash messages */
+.flash-messages {
+    margin-bottom: 2rem;
+}
+
+.flash-message {
+    padding: 1rem;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+/* Container styles */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Card styles */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Form styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
 }

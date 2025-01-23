@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h2 class="quiz-title">Quiz</h2>
+            <div class="quiz-header-line"></div>
+        </div>
+
+        <form id="quizForm" method="POST">
+            <div class="question-container">
+                {% for question in questions %}
+                <div class="question-card {% if loop.first %}active{% endif %}" data-question="{{ loop.index }}">
+                    <div class="question-content">
+                        <p class="question-text">{{ question.question }}</p>
+                        <div class="options">
+                            <label class="option">
+                                <input type="radio" name="answers[{{ loop.index0 }}]" value="1" required>
+                                <span class="option-text">Yes</span>
+                            </label>
+                            <label class="option">
+                                <input type="radio" name="answers[{{ loop.index0 }}]" value="2" required>
+                                <span class="option-text">No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+
+            <div class="button-container">
+                <button type="submit" id="submit-btn" class="submit-btn disabled" disabled>Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.quiz-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.question-container {
+    position: relative;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.question-card {
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.5s ease;
+    visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.question-content {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+}
+
+.question-card.active {
+    opacity: 1;
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.question-card.slide-out {
+    opacity: 0;
+    transform: translateX(-100%);
+}
+
+.question-text {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 40px;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.options {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.option {
+    background: #f8f9fa;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 15px 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    text-align: center;
+}
+
+.option:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    border-color: #4CAF50;
+}
+
+.option input[type="radio"] {
+    display: none;
+}
+
+.option input[type="radio"]:checked + .option-text {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.option-text {
+    font-size: 18px;
+    color: #495057;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #e9ecef;
+    margin: 30px 0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress {
+    width: 0%;
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.submit-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 auto;
+    display: block;
+}
+
+.submit-btn.disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.submit-btn:not(.disabled):hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.quiz-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px 0;
+    position: relative;
+}
+
+.quiz-title {
+    font-size: 32px;
+    color: #2e7d32;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+}
+
+.quiz-header-line {
+    width: 60px;
+    height: 3px;
+    background: #4CAF50;
+    margin: 15px auto 0;
+    border-radius: 2px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const questionCards = document.querySelectorAll('.question-card');
+    const progressBar = document.querySelector('.progress');
+    const submitBtn = document.getElementById('submit-btn');
+    const totalQuestions = questionCards.length;
+    let currentQuestion = 1;
+
+    function updateProgress() {
+        const progress = (currentQuestion / totalQuestions) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    function showNextQuestion() {
+        const currentCard = document.querySelector(`.question-card[data-question="${currentQuestion}"]`);
+        const nextCard = document.querySelector(`.question-card[data-question="${currentQuestion + 1}"]`);
+
+        if (currentCard) {
+            currentCard.classList.add('slide-out');
+            setTimeout(() => {
+                currentCard.classList.remove('active');
+                currentCard.classList.remove('slide-out');
+            }, 500);
+        }
+
+        if (nextCard) {
+            setTimeout(() => {
+                nextCard.classList.add('active');
+                currentQuestion++;
+                updateProgress();
+            }, 500);
+        }
+
+        if (currentQuestion >= totalQuestions) {
+            submitBtn.style.display = 'block';
+        }
+    }
+
+    function checkLastQuestionAnswered() {
+        const lastQuestion = document.querySelector(`.question-card[data-question="${totalQuestions}"]`);
+        const lastQuestionRadios = lastQuestion.querySelectorAll('input[type="radio"]');
+        const isLastQuestionAnswered = Array.from(lastQuestionRadios).some(radio => radio.checked);
+
+        if (isLastQuestionAnswered) {
+            submitBtn.classList.remove('disabled');
+            submitBtn.disabled = false;
+        }
+    }
+
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const questionCard = this.closest('.question-card');
+            const questionNumber = parseInt(questionCard.dataset.question);
+
+            if (questionNumber === totalQuestions) {
+                checkLastQuestionAnswered();
+                progressBar.style.width = '100%';
+            } else if (currentQuestion < totalQuestions) {
+                setTimeout(showNextQuestion, 500);
+            }
+        });
+    });
+
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const totalAnswered = document.querySelectorAll('input[type="radio"]:checked').length;
+        
+        if (totalAnswered < totalQuestions) {
+            alert('Please answer all questions before submitting.');
+            return;
+        }
+        
+        const formData = new FormData(this);
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.next_url) {
+                window.location.href = data.next_url;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('There was an error submitting your answers. Please try again.');
+        });
+    });
+
+    updateProgress();
+});
+</script>
+{% endblock %}

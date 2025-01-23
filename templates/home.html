@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="dashboard">
+        <div class="welcome-section">
+            <h1>Welcome to Your Quiz Dashboard</h1>
+            <p class="subtitle">Select a test to begin your assessment</p>
+        </div>
+        
+        <div class="test-grid">
+            {% for test_name in test_names %}
+            <div class="test-card">
+                <div class="test-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3>{{ test_name }}</h3>
+                <p class="test-description">Assessment {{ loop.index }} of {{ test_names|length }}</p>
+                <a href="{{ url_for('test', test_number=loop.index) }}" class="start-btn">
+                    Start Test <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    .container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 40px 20px;
+    }
+
+    .dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .welcome-section {
+        text-align: center;
+        margin-bottom: 40px;
+        color: #2c3e50;
+    }
+
+    .welcome-section h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .subtitle {
+        font-size: 1.2em;
+        color: #666;
+    }
+
+    .test-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 20px;
+    }
+
+    .test-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .test-icon {
+        font-size: 2.5em;
+        color: #4CAF50;
+        margin-bottom: 20px;
+    }
+
+    .test-card h3 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 1.5em;
+    }
+
+    .test-description {
+        color: #666;
+        margin-bottom: 25px;
+        font-size: 0.9em;
+    }
+
+    .start-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 25px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+        font-weight: 500;
+    }
+
+    .start-btn:hover {
+        background-color: #45a049;
+    }
+
+    .start-btn i {
+        transition: transform 0.3s ease;
+    }
+
+    .start-btn:hover i {
+        transform: translateX(5px);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .welcome-section h1 {
+            font-size: 2em;
+        }
+
+        .test-grid {
+            grid-template-columns: 1fr;
+            padding: 10px;
+        }
+
+        .test-card {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
