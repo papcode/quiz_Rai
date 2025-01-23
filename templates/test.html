@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="quiz-container">
+<div class="quiz-container">
+    <div class="quiz-wrapper">
         <div class="quiz-header">
-            <h2 class="quiz-title">Quiz</h2>
-            <div class="quiz-header-line"></div>
+            <div class="quiz-progress">
+                <div class="progress-text">
+                    <span>Question Progress</span>
+                    <span class="question-counter">1/{{ questions|length }}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" style="width: 0%"></div>
+                </div>
+            </div>
         </div>
 
         <form id="quizForm" method="POST">
@@ -13,73 +20,109 @@
                 {% for question in questions %}
                 <div class="question-card {% if loop.first %}active{% endif %}" data-question="{{ loop.index }}">
                     <div class="question-content">
-                        <p class="question-text">{{ question.question }}</p>
-                        <div class="options">
-                            <label class="option">
-                                <input type="radio" name="answers[{{ loop.index0 }}]" value="1" required>
-                                <span class="option-text">Yes</span>
+                        <div class="question-number">Question {{ loop.index }}</div>
+                        <h3 class="question-text">{{ question.question }}</h3>
+                        
+                        <div class="options-container">
+                            <label class="option-card" for="yes_{{ loop.index }}">
+                                <input type="radio" id="yes_{{ loop.index }}" name="answers[{{ loop.index0 }}]" value="1" required>
+                                <div class="option-content">
+                                    <div class="option-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <span class="option-text">Yes</span>
+                                </div>
                             </label>
-                            <label class="option">
-                                <input type="radio" name="answers[{{ loop.index0 }}]" value="2" required>
-                                <span class="option-text">No</span>
+
+                            <label class="option-card" for="no_{{ loop.index }}">
+                                <input type="radio" id="no_{{ loop.index }}" name="answers[{{ loop.index0 }}]" value="2" required>
+                                <div class="option-content">
+                                    <div class="option-icon">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                    <span class="option-text">No</span>
+                                </div>
                             </label>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-            
-            <div class="progress-bar">
-                <div class="progress"></div>
-            </div>
 
-            <div class="button-container">
-                <button type="submit" id="submit-btn" class="submit-btn disabled" disabled>Submit</button>
-            </div>
+            <button type="submit" id="submit-btn" class="submit-btn disabled" disabled>
+                <span>Submit Answers</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
         </form>
     </div>
 </div>
 
 <style>
-.container {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 .quiz-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 40px 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.quiz-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    position: relative;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+}
+
+.quiz-header {
+    margin-bottom: 40px;
+}
+
+.quiz-progress {
+    margin-bottom: 30px;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    color: #666;
+    font-weight: 500;
+}
+
+.question-counter {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
     overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(to right, #4CAF50, #45a049);
+    transition: width 0.5s ease;
 }
 
 .question-container {
     position: relative;
-    min-height: 300px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 400px;
 }
 
 .question-card {
     position: absolute;
     width: 100%;
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateX(100px);
     transition: all 0.5s ease;
     visibility: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.question-content {
-    width: 100%;
-    text-align: center;
-    padding: 20px;
 }
 
 .question-card.active {
@@ -90,88 +133,103 @@
 
 .question-card.slide-out {
     opacity: 0;
-    transform: translateX(-100%);
+    transform: translateX(-100px);
+}
+
+.question-content {
+    text-align: center;
+    padding: 20px;
+}
+
+.question-number {
+    color: #4CAF50;
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 18px;
 }
 
 .question-text {
     font-size: 24px;
     color: #333;
     margin-bottom: 40px;
-    text-align: center;
     line-height: 1.4;
 }
 
-.options {
+.options-container {
     display: flex;
     justify-content: center;
-    gap: 40px;
-    margin-top: 20px;
+    gap: 20px;
+    margin-top: 30px;
 }
 
-.option {
-    background: #f8f9fa;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    padding: 15px 40px;
+.option-card {
+    flex: 1;
+    max-width: 200px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 120px;
-    text-align: center;
 }
 
-.option:hover {
-    background: #e9ecef;
-    transform: translateY(-2px);
-    border-color: #4CAF50;
-}
-
-.option input[type="radio"] {
+.option-card input[type="radio"] {
     display: none;
 }
 
-.option input[type="radio"]:checked + .option-text {
-    color: #4CAF50;
-    font-weight: bold;
+.option-content {
+    background: #f8f9fa;
+    border: 2px solid #eee;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.option-icon {
+    font-size: 24px;
+    color: #666;
+    margin-bottom: 10px;
 }
 
 .option-text {
     font-size: 18px;
-    color: #495057;
+    color: #333;
+    font-weight: 500;
 }
 
-.progress-bar {
-    width: 100%;
-    height: 4px;
-    background: #e9ecef;
-    margin: 30px 0;
-    border-radius: 2px;
-    overflow: hidden;
+.option-card:hover .option-content {
+    transform: translateY(-5px);
+    border-color: #4CAF50;
 }
 
-.progress {
-    width: 0%;
-    height: 100%;
+.option-card input[type="radio"]:checked + .option-content {
     background: #4CAF50;
-    transition: width 0.3s ease;
+    border-color: #4CAF50;
+    transform: translateY(-5px);
+}
+
+.option-card input[type="radio"]:checked + .option-content .option-icon,
+.option-card input[type="radio"]:checked + .option-content .option-text {
+    color: white;
 }
 
 .submit-btn {
+    display: none;
+    width: 100%;
+    padding: 15px;
     background: #4CAF50;
     color: white;
     border: none;
-    padding: 12px 30px;
-    border-radius: 4px;
+    border-radius: 10px;
     font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin: 0 auto;
-    display: block;
+    margin-top: 30px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
 .submit-btn.disabled {
     background: #cccccc;
     cursor: not-allowed;
-    transform: none;
 }
 
 .submit-btn:not(.disabled):hover {
@@ -179,30 +237,24 @@
     transform: translateY(-2px);
 }
 
-.quiz-header {
-    text-align: center;
-    margin-bottom: 40px;
-    padding: 20px 0;
-    position: relative;
-}
+@media (max-width: 600px) {
+    .quiz-wrapper {
+        padding: 20px;
+    }
 
-.quiz-title {
-    font-size: 32px;
-    color: #2e7d32;
-    margin: 0;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    position: relative;
-    display: inline-block;
-}
+    .options-container {
+        flex-direction: column;
+        align-items: center;
+    }
 
-.quiz-header-line {
-    width: 60px;
-    height: 3px;
-    background: #4CAF50;
-    margin: 15px auto 0;
-    border-radius: 2px;
+    .option-card {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .question-text {
+        font-size: 20px;
+    }
 }
 </style>
 
@@ -210,6 +262,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const questionCards = document.querySelectorAll('.question-card');
     const progressBar = document.querySelector('.progress');
+    const questionCounter = document.querySelector('.question-counter');
     const submitBtn = document.getElementById('submit-btn');
     const totalQuestions = questionCards.length;
     let currentQuestion = 1;
@@ -217,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateProgress() {
         const progress = (currentQuestion / totalQuestions) * 100;
         progressBar.style.width = `${progress}%`;
+        questionCounter.textContent = `${currentQuestion}/${totalQuestions}`;
     }
 
     function showNextQuestion() {
@@ -239,19 +293,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         }
 
-        if (currentQuestion >= totalQuestions) {
-            submitBtn.style.display = 'block';
-        }
-    }
-
-    function checkLastQuestionAnswered() {
-        const lastQuestion = document.querySelector(`.question-card[data-question="${totalQuestions}"]`);
-        const lastQuestionRadios = lastQuestion.querySelectorAll('input[type="radio"]');
-        const isLastQuestionAnswered = Array.from(lastQuestionRadios).some(radio => radio.checked);
-
-        if (isLastQuestionAnswered) {
-            submitBtn.classList.remove('disabled');
-            submitBtn.disabled = false;
+        if (currentQuestion >= totalQuestions - 1) {
+            submitBtn.style.display = 'flex';
+            submitBtn.classList.add('disabled');
+            submitBtn.disabled = true;
         }
     }
 
@@ -261,7 +306,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const questionNumber = parseInt(questionCard.dataset.question);
 
             if (questionNumber === totalQuestions) {
-                checkLastQuestionAnswered();
+                submitBtn.classList.remove('disabled');
+                submitBtn.disabled = false;
                 progressBar.style.width = '100%';
             } else if (currentQuestion < totalQuestions) {
                 setTimeout(showNextQuestion, 500);
@@ -272,25 +318,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quizForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const totalAnswered = document.querySelectorAll('input[type="radio"]:checked').length;
-        
-        if (totalAnswered < totalQuestions) {
-            alert('Please answer all questions before submitting.');
-            return;
-        }
-        
         const formData = new FormData(this);
         
         fetch(window.location.href, {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.next_url) {
                 window.location.href = data.next_url;
@@ -305,4 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateProgress();
 });
 </script>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% endblock %}

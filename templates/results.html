@@ -7,81 +7,116 @@
 
 {% block content %}
 <div class="results-container">
-    <div class="personality-card">
-        <div class="personality-header">
-            <h1>Your Personality Type</h1>
-            <div class="personality-type">{{ personality_type }}</div>
+    <div class="results-card">
+        <div class="completion-message">
+            <div class="completion-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Congratulations!</h3>
+            <p>You have successfully completed the quiz.</p>
+            <p>Your results have been sent to the administrator.</p>
         </div>
-        
-        <div class="personality-traits">
-            {% if personality_type == "HIGH D" %}
-                <h2>Extroverted + Task Oriented</h2>
-                <div class="trait-icons">
-                    <div class="trait-icon">
-                        <i class="fas fa-bolt"></i>
-                        <span>Direct</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-flag"></i>
-                        <span>Decisive</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Driven</span>
-                    </div>
-                </div>
-            {% elif personality_type == "HIGH I" %}
-                <h2>Extroverted + People Oriented</h2>
-                <div class="trait-icons">
-                    <div class="trait-icon">
-                        <i class="fas fa-users"></i>
-                        <span>Interactive</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-star"></i>
-                        <span>Influential</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-comments"></i>
-                        <span>Inspiring</span>
-                    </div>
-                </div>
-            {% elif personality_type == "HIGH S" %}
-                <h2>Introverted + People Oriented</h2>
-                <div class="trait-icons">
-                    <div class="trait-icon">
-                        <i class="fas fa-heart"></i>
-                        <span>Supportive</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-balance-scale"></i>
-                        <span>Stable</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-handshake"></i>
-                        <span>Steady</span>
-                    </div>
-                </div>
-            {% else %}
-                <h2>Introverted + Task Oriented</h2>
-                <div class="trait-icons">
-                    <div class="trait-icon">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Careful</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-clipboard-check"></i>
-                        <span>Correct</span>
-                    </div>
-                    <div class="trait-icon">
-                        <i class="fas fa-tasks"></i>
-                        <span>Compliant</span>
-                    </div>
-                </div>
-            {% endif %}
+
+        <div class="action-buttons">
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                <span>Logout</span>
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
         </div>
     </div>
-
-    <a href="{{ url_for('auth.login') }}" class="return-btn">Return to Login</a>
 </div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.results-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+.results-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    text-align: center;
+    width: 90%;
+    max-width: 500px;
+    margin: 20px;
+}
+
+.completion-message {
+    margin-bottom: 30px;
+}
+
+.completion-icon {
+    font-size: 64px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.completion-message h3 {
+    font-size: 32px;
+    color: #2e7d32;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.completion-message p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.action-buttons {
+    margin-top: 30px;
+}
+
+.logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 30px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .results-card {
+        padding: 30px 20px;
+    }
+    
+    .completion-message h3 {
+        font-size: 28px;
+    }
+}
+</style>
 {% endblock %}

@@ -1,29 +1,466 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='user_auth.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Register</h1>
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flashes">
-                    {% for message in messages %}
-                        <div class="flash">{{ message }}</div>
-                    {% endfor %}
+{% extends "base.html" %}
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-left">
+            <div class="register-header">
+                <h2>Create Account</h2>
+                <p>Join us to start your personality discovery journey</p>
+            </div>
+            <form method="POST" id="registerForm" class="register-form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="student_id" name="student_id" placeholder="Student ID" required>
+                        <span class="error-message" id="student_id_error"></span>
+                    </div>
                 </div>
-            {% endif %}
-        {% endwith %}
-        <form method="post">
-            <label for="student_id">Student ID:</label>
-            <input type="text" id="student_id" name="student_id" required><br><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br><br>
-            <input type="submit" value="Register">
-        </form>
-        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Click here to login</a></p>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="Email Address" required>
+                        <span class="error-message" id="email_error"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                        <i class="fas fa-eye-slash password-toggle" onclick="togglePassword('password')"></i>
+                        <span class="error-message" id="password_error"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                        <i class="fas fa-eye-slash password-toggle" onclick="togglePassword('confirm_password')"></i>
+                        <span class="error-message" id="confirm_password_error"></span>
+                    </div>
+                </div>
+                <button type="submit" id="submitBtn" class="register-btn" disabled>
+                    <span>Create Account</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            <div class="register-footer">
+                <p>Already have an account?</p>
+                <a href="{{ url_for('auth.login') }}" class="login-link">Login Here</a>
+            </div>
+        </div>
+        <div class="register-right">
+            <div class="welcome-content">
+                <h1>Welcome!</h1>
+                <p>Begin your journey of self-discovery with our personality assessment</p>
+                <div class="features">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Comprehensive Personality Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Instant Results</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Professional Insights</span>
+                    </div>
+                </div>
+                <div class="decoration">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.register-card {
+    display: flex;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 1000px;
+    min-height: 600px;
+}
+
+.register-left {
+    flex: 1;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+.register-right {
+    flex: 1;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    padding: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-header h2 {
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.register-header p {
+    color: #666;
+    margin-bottom: 40px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group i:not(.password-toggle) {
+    position: absolute;
+    left: 15px;
+    color: #666;
+    font-size: 18px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px 45px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.input-group input.error {
+    border-color: #dc3545;
+}
+
+.input-group input.valid {
+    border-color: #28a745;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    cursor: pointer;
+    color: #666;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+}
+
+.register-btn {
+    width: 100%;
+    padding: 15px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.register-btn:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.register-btn:not(:disabled):hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.register-footer {
+    margin-top: auto;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.login-link {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.welcome-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-content h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.features {
+    margin-top: 40px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.feature-item i {
+    font-size: 20px;
+}
+
+.decoration {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.circle-1 {
+    width: 200px;
+    height: 200px;
+    top: -100px;
+    right: -100px;
+}
+
+.circle-2 {
+    width: 150px;
+    height: 150px;
+    bottom: -75px;
+    left: -75px;
+}
+
+.circle-3 {
+    width: 100px;
+    height: 100px;
+    top: 50%;
+    right: 10%;
+}
+
+@media (max-width: 768px) {
+    .register-card {
+        flex-direction: column;
+    }
+    
+    .register-right {
+        display: none;
+    }
+    
+    .register-left {
+        padding: 40px;
+    }
+}
+</style>
+
+<script>
+function togglePassword(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleIcon = passwordInput.nextElementSibling;
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    }
+}
+
+// Previous validation script remains the same
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const studentId = document.getElementById('student_id');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    let validations = {
+        studentId: false,
+        email: false,
+        password: false,
+        confirmPassword: false
+    };
+
+    // Check if all validations pass
+    function updateSubmitButton() {
+        const allValid = Object.values(validations).every(value => value === true);
+        submitBtn.disabled = !allValid;
+    }
+
+    // Email validation
+    let emailTimeout;
+    email.addEventListener('input', function() {
+        clearTimeout(emailTimeout);
+        emailTimeout = setTimeout(() => {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value)) {
+                document.getElementById('email_error').textContent = 'Please enter a valid email address';
+                email.classList.add('error');
+                email.classList.remove('valid');
+                validations.email = false;
+            } else {
+                // Check if email exists in database
+                fetch('/check-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email.value })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        document.getElementById('email_error').textContent = 'Email already registered';
+                        email.classList.add('error');
+                        email.classList.remove('valid');
+                        validations.email = false;
+                    } else {
+                        document.getElementById('email_error').textContent = '';
+                        email.classList.remove('error');
+                        email.classList.add('valid');
+                        validations.email = true;
+                    }
+                    updateSubmitButton();
+                });
+            }
+            updateSubmitButton();
+        }, 500);
+    });
+
+    // Student ID validation
+    let studentIdTimeout;
+    studentId.addEventListener('input', function() {
+        clearTimeout(studentIdTimeout);
+        studentIdTimeout = setTimeout(() => {
+            if (studentId.value.length < 3) {
+                document.getElementById('student_id_error').textContent = 'Student ID must be at least 3 characters';
+                studentId.classList.add('error');
+                studentId.classList.remove('valid');
+                validations.studentId = false;
+            } else {
+                // Check if student ID exists
+                fetch('/check-student-id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ student_id: studentId.value })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        document.getElementById('student_id_error').textContent = 'Student ID already registered';
+                        studentId.classList.add('error');
+                        studentId.classList.remove('valid');
+                        validations.studentId = false;
+                    } else {
+                        document.getElementById('student_id_error').textContent = '';
+                        studentId.classList.remove('error');
+                        studentId.classList.add('valid');
+                        validations.studentId = true;
+                    }
+                    updateSubmitButton();
+                });
+            }
+            updateSubmitButton();
+        }, 500);
+    });
+
+    // Password validation
+    password.addEventListener('input', function() {
+        if (password.value.length < 6) {
+            document.getElementById('password_error').textContent = 'Password must be at least 6 characters';
+            password.classList.add('error');
+            password.classList.remove('valid');
+            validations.password = false;
+        } else {
+            document.getElementById('password_error').textContent = '';
+            password.classList.remove('error');
+            password.classList.add('valid');
+            validations.password = true;
+        }
+        validateConfirmPassword();
+        updateSubmitButton();
+    });
+
+    // Confirm password validation
+    function validateConfirmPassword() {
+        if (confirmPassword.value && password.value !== confirmPassword.value) {
+            document.getElementById('confirm_password_error').textContent = 'Passwords do not match';
+            confirmPassword.classList.add('error');
+            confirmPassword.classList.remove('valid');
+            validations.confirmPassword = false;
+        } else if (confirmPassword.value) {
+            document.getElementById('confirm_password_error').textContent = '';
+            confirmPassword.classList.remove('error');
+            confirmPassword.classList.add('valid');
+            validations.confirmPassword = true;
+        }
+        updateSubmitButton();
+    }
+
+    confirmPassword.addEventListener('input', validateConfirmPassword);
+});
+</script>
+
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
