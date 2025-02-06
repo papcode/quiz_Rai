@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 import base64
 from config.config_reader import load_config
+from typing import Dict
 
 def send_quiz_results(student_id, personality_type, personality_description, test_answers, signature_data):
     try:
@@ -95,3 +96,31 @@ def send_reset_email(email, reset_link):
     except Exception as e:
         print(f"Failed to send reset email: {e}")
         return False
+
+def send_career_report(user_email: str, username: str, career_analysis: dict):
+    """
+    Sends career analysis report to admin
+    """
+    subject = f"Career Path Analysis Report for {username}"
+    
+    body = f"""
+    Career Analysis Report for User: {username}
+    =======================================
+    
+    PRIMARY CAREER RECOMMENDATION:
+    {career_analysis.get('primary_recommendation', 'Not available')}
+    
+    ALTERNATIVE CAREER PATHS:
+    {career_analysis.get('alternative_paths', 'Not available')}
+    
+    KEY SKILLS TO DEVELOP:
+    {career_analysis.get('skill_gaps', 'Not available')}
+    
+    ADDITIONAL INSIGHTS:
+    {career_analysis.get('additional_insights', 'Not available')}
+    
+    =======================================
+    This analysis was generated based on the user's responses to the career assessment tests.
+    """
+    
+    send_email(subject, body)

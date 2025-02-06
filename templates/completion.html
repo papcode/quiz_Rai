@@ -1,21 +1,32 @@
 {% extends "base.html" %}
-{% block content %}
-<div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-content">
-        <div class="spinner"></div>
-        <p>Sending results to administrator...</p>
-    </div>
-</div>
 
+{% block content %}
 <div class="completion-container">
     <div class="completion-card">
-        <h1>Congratulations!</h1>
-        <p>You have successfully completed the quiz.</p>
-        <p>Your results have been sent to the administrator.</p>
+        <div class="completion-message">
+            <i class="fas fa-check-circle completion-icon"></i>
+            <h3>Assessment Completed!</h3>
+            <p>Thank you for completing the career assessment.</p>
+            
+            {% if career_analysis %}
+            <div class="analysis-preview">
+                <h4>Career Analysis Preview:</h4>
+                <p><strong>Primary Recommendation:</strong><br>
+                {{ career_analysis.get('primary_recommendation', 'Analysis in progress...') }}</p>
+            </div>
+            {% endif %}
+            
+            <p>A detailed report has been sent to the administrator.</p>
+        </div>
         
-        <form action="{{ url_for('auth.logout') }}" method="POST">
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
+        <div class="action-buttons">
+            <form action="{{ url_for('auth.logout') }}" method="POST">
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 

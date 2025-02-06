@@ -259,6 +259,86 @@
 </style>
 
 <script>
+// Prevent multiple submissions
+let isSubmitting = false;
+
+// Function to get responses from the current test
+function getResponses() {
+    const responses = [];
+    const questions = document.querySelectorAll('.question');
+    
+    questions.forEach((question, index) => {
+        const questionText = question.querySelector('.question-text').textContent;
+        const yesBtn = question.querySelector('.yes-btn');
+        const noBtn = question.querySelector('.no-btn');
+        
+        let answer = null;
+        if (yesBtn && yesBtn.classList.contains('selected')) {
+            answer = true;
+        } else if (noBtn && noBtn.classList.contains('selected')) {
+            answer = false;
+        }
+        
+        responses.push({
+            'question': questionText,
+            'answer': answer
+        });
+    });
+    
+    return responses;
+}
+
+// Function to handle test submissions
+function submitTest(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) {
+        return;
+    }
+    
+    isSubmitting = true;
+    const currentTest = getCurrentTest();
+    const responses = getResponses();
+    
+    // Create and submit a traditional form
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = window.location.pathname;
+    
+    // Add responses as hidden input
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'responses';
+    input.value = JSON.stringify(responses);
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    
+    // Submit the form
+    form.submit();
+}
+
+// Get current test number
+function getCurrentTest() {
+    const path = window.location.pathname;
+    return parseInt(path.split('/').pop());
+}
+
+// Initialize submit button
+document.addEventListener('DOMContentLoaded', function() {
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    if (submitButton) {
+        submitButton.removeEventListener('click', submitTest); // Remove any existing listeners
+        submitButton.addEventListener('click', submitTest);
+    }
+});
+
+// Reset submission flag when navigating
+window.onbeforeunload = function() {
+    isSubmitting = false;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const questionCards = document.querySelectorAll('.question-card');
     const progressBar = document.querySelector('.progress');
@@ -315,19 +395,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Only modify the form submission part
     document.getElementById('quizForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
+        // Get all questions and their responses
+        const responses = [];
+        const questionCards = document.querySelectorAll('.question-card');
+        const currentTest = window.location.pathname.split('/').pop();
+        
+        questionCards.forEach(card => {
+            const questionText = card.querySelector('.question-text').textContent;
+            const yesRadio = card.querySelector('input[value="1"]');
+            const noRadio = card.querySelector('input[value="2"]');
+            
+            let answer = null;
+            if (yesRadio.checked) {
+                answer = "yes";
+            } else if (noRadio.checked) {
+                answer = "no";
+            }
+            
+            responses.push({
+                "question": questionText,
+                "answer": answer,
+                "test": `test${currentTest}`
+            });
+        });
+        
+        console.log('Formatted responses:', responses);  // Debug log
         
         fetch(window.location.href, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(responses)
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.next_url) {
-                window.location.href = data.next_url;
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                return response.json().then(data => {
+                    if (data.next_url) {
+                        window.location.href = data.next_url;
+                    }
+                });
             }
         })
         .catch(error => {

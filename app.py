@@ -1,11 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, Response
 from auth import auth_bp
 from database import users_collection
 from config.config_reader import load_config
-from utils.email_sender import send_quiz_results
+from utils.email_sender import send_quiz_results, send_career_report
+from services.llm_service import LLMService
 import openpyxl
 import os
 import json
+import pandas as pd
+from datetime import datetime
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 
@@ -15,6 +21,9 @@ app.secret_key = config['SECRET_KEY']
 
 # Register blueprints
 app.register_blueprint(auth_bp)
+
+# Initialize LLM service
+llm_service = LLMService(config['BASE_URL'])
 
 @app.route('/')
 def home():
@@ -29,9 +38,9 @@ def home():
     if not user.get('signature'):
         return redirect(url_for('canvas_name'))
     
-    # If quiz is completed, show results
+    # If quiz is completed, show completion page
     if user.get('quiz_completed'):
-        return redirect(url_for('results'))
+        return redirect(url_for('completion'))
     
     # Otherwise, go to test selection/first test
     return redirect(url_for('test', test_number=1))
@@ -87,87 +96,186 @@ def reset_signature():
 def test(test_number):
     if 'username' not in session:
         return redirect(url_for('auth.login'))
-    
-    user = users_collection.find_one({'student_id': session['username']})
-    if not user or not user.get('signature'):
-        return redirect(url_for('canvas_name'))
-    
-    if test_number < 1 or test_number > 4:
-        return redirect(url_for('home'))
-    
-    if request.method == 'POST':
-        # Get all answers from the form
-        answers = []
-        for key in sorted(request.form.keys()):  # Sort to maintain order
-            if key.startswith('answers['):
-                answers.append(request.form[key])
+
+    if request.method == 'GET':
+        # Read questions from Excel using the correct column name: "Question"
+        df = pd.read_excel('questions.xlsx', sheet_name=f'TEST{test_number}')
+        questions = [{"question": q} for q in df['Question'].tolist()]
         
-        if 'test_answers' not in session:
-            session['test_answers'] = {}
-        session['test_answers'][f'test{test_number}'] = answers
+        return render_template('test.html', 
+                             test_number=test_number,
+                             questions=questions)
+
+    # For POST requests - handle form submission
+    try:
+        responses = request.get_json()
+        print(f"Received responses for test {test_number}:", responses)
         
-        # Update user's progress in database
-        users_collection.update_one(
-            {'student_id': session['username']},
-            {'$set': {f'test_answers.test{test_number}': answers}}
-        )
+        session[f'test{test_number}_responses'] = responses
         
         if test_number < 4:
-            return jsonify({'next_url': url_for('test', test_number=test_number + 1)})
+            return jsonify({"next_url": f"/test/{test_number + 1}"})
         else:
-            users_collection.update_one(
-                {'student_id': session['username']},
-                {'$set': {'quiz_completed': True}}
-            )
-            return jsonify({'next_url': url_for('results')})
-    
-    try:
-        questions = load_questions('questions.xlsx', f'TEST{test_number}')
-        if not questions:
-            raise Exception("No questions found")
+            return jsonify({"next_url": "/submit"})
             
-        return render_template('test.html', questions=questions)
     except Exception as e:
-        print(f"Error loading questions: {e}")
-        flash("Error loading questions. Please try again.")
-        return redirect(url_for('home'))
+        print(f"Error saving test responses: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/results')
 def results():
+    # Redirect to the new completion page
+    return redirect(url_for('completion'))
+
+@app.route('/test/<int:test_number>', methods=['POST'])
+def submit_test(test_number):
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     
     try:
-        user = users_collection.find_one({'student_id': session['username']})
-        if not user:
-            return redirect(url_for('auth.login'))
+        # Get responses from request
+        responses = request.get_json()
+        print(f"Received responses for test {test_number}:", responses)
+        
+        # Store responses in session
+        session[f'test{test_number}_responses'] = responses
+        
+        # Set response headers for redirect
+        if test_number < 4:
+            response = Response()
+            response.headers['Location'] = url_for('test', test_number=test_number + 1)
+            response.status_code = 302  # HTTP redirect status code
+            return response
+        else:
+            response = Response()
+            response.headers['Location'] = url_for('submit')
+            response.status_code = 302
+            return response
+        
+    except Exception as e:
+        print(f"Error saving test responses: {str(e)}")
+        flash('An error occurred while saving your responses.')
+        return redirect(url_for('test', test_number=test_number))
 
-        # Get all test answers and signature
-        test_answers = user.get('test_answers', {})
-        signature_data = user.get('signature', '')
+@app.route('/submit', methods=['GET', 'POST'])
+def submit():
+    if 'username' not in session:
+        return redirect(url_for('auth.login'))
+    
+    try:
+        username = session.get('username')
+        print(f"Processing career analysis for username: {username}")
         
-        # Calculate personality type
-        personality_result = calculate_personality_type(test_answers)
+        # Collect all test responses
+        test_responses = {
+            f'TEST{i}': session.get(f'test{i}_responses', [])
+            for i in range(1, 5)
+        }
         
-        # Send email to admin with detailed results
-        email_sent = send_quiz_results(
-            student_id=session['username'],
-            personality_type=personality_result['type'],
-            personality_description=personality_result['description'],
-            test_answers=test_answers,
-            signature_data=signature_data
+        print(f"Collected responses: {test_responses}")
+        
+        # Get career analysis
+        try:
+            base_url = config['BASE_URL']
+            llm_service = LLMService(base_url)
+            career_analysis = llm_service.get_career_analysis(test_responses)
+            print("Career analysis completed successfully")
+            
+            # Save data to JSON file with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            data_to_save = {
+                "timestamp": timestamp,
+                "username": username,
+                "test_responses": test_responses,
+                "career_analysis": career_analysis
+            }
+            
+            # Create logs directory if it doesn't exist
+            if not os.path.exists('logs'):
+                os.makedirs('logs')
+            
+            # Save to JSON file
+            filename = f"logs/career_analysis_{username}_{timestamp}.json"
+            with open(filename, 'w') as f:
+                json.dump(data_to_save, f, indent=4)
+            print(f"Data saved to {filename}")
+            
+            # Send email using the same mechanism as test script
+            smtp_server = config['SMTP_SERVER']
+            smtp_port = int(config['SMTP_PORT'])
+            sender_email = config['SENDER_EMAIL']
+            sender_password = config['SENDER_PASSWORD']
+            admin_email = config['ADMIN_EMAIL']
+            
+            print(f"""
+            Email configuration:
+            SMTP Server: {smtp_server}
+            SMTP Port: {smtp_port}
+            Sender Email: {sender_email}
+            Admin Email: {admin_email}
+            """)
+            
+            # Create message
+            message = MIMEMultipart()
+            message["From"] = sender_email
+            message["To"] = admin_email
+            message["Subject"] = f"Career Analysis Report - Student: {username}"
+            
+            body = f"""
+            Career Analysis Report
+            ---------------------
+            Student Username: {username}
+            Timestamp: {timestamp}
+            
+            Analysis Results:
+            ----------------
+            {career_analysis}
+            
+            This is an automated report from the Career Guidance System.
+            """
+            
+            message.attach(MIMEText(body, "html"))
+            
+            # Create SMTP session
+            print("Connecting to SMTP server...")
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                print("Starting TLS...")
+                server.starttls()
+                print("Logging in...")
+                server.login(sender_email, sender_password)
+                print("Sending email...")
+                text = message.as_string()
+                server.sendmail(sender_email, admin_email, text)
+                print(f"Email sent successfully to admin ({admin_email})!")
+            
+        except Exception as e:
+            print(f"Error in analysis or email: {e}")
+            print("Full error details:", e.__dict__)
+            raise
+        
+        # Update user status
+        users_collection.update_one(
+            {'student_id': username},
+            {'$set': {'quiz_completed': True}}
         )
         
-        if not email_sent:
-            print("Failed to send email to admin")
-            flash("There was an error processing your results. Please contact administrator.")
-            return redirect(url_for('home'))
+        # Store analysis in session
+        session['career_analysis'] = career_analysis
         
-        return render_template('completion.html')
-                             
+        return redirect(url_for('completion'))
+        
     except Exception as e:
-        print(f"Error in results route: {e}")
+        print(f"Error in submission process: {str(e)}")
+        flash('An error occurred while processing your responses. Please try again.')
+        return redirect(url_for('home'))
+
+@app.route('/completion')
+def completion():
+    if 'username' not in session:
         return redirect(url_for('auth.login'))
+    
+    career_analysis = session.get('career_analysis', {})
+    return render_template('completion.html', career_analysis=career_analysis)
 
 # Helper functions for loading questions and calculating personality type
 def load_questions(file_path, sheet_name):

@@ -40,5 +40,7 @@ def load_config():
         'SMTP_PORT': config.get('email', 'SMTP_PORT', fallback='587'),
         'SENDER_EMAIL': config.get('email', 'SENDER_EMAIL', fallback=''),
         'SENDER_PASSWORD': config.get('email', 'SENDER_PASSWORD', fallback=''),
-        'ADMIN_EMAIL': config.get('email', 'ADMIN_EMAIL', fallback='')
+        'ADMIN_EMAIL': config.get('email', 'ADMIN_EMAIL', fallback=''),
+        'BASE_URL': config.get('llm', 'BASE_URL', fallback=''),
+        'MODEL': config.get('llm', 'MODEL', fallback='')
     }
