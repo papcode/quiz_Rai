@@ -12,6 +12,7 @@ from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from werkzeug.security import check_password_hash
 
 app = Flask(__name__)
 
@@ -25,72 +26,38 @@ app.register_blueprint(auth_bp)
 # Initialize LLM service
 llm_service = LLMService(config['BASE_URL'])
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        password = request.form.get('password')
+        
+        user = users_collection.find_one({'student_id': student_id})
+        
+        if user and check_password_hash(user['password'], password):
+            session['username'] = student_id
+            # Redirect directly to first test instead of canvas
+            return redirect(url_for('test', test_number=1))
+        else:
+            flash('Invalid username or password')
+    
+    return render_template('login.html')
+
 @app.route('/')
 def home():
     if 'username' not in session:
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('login'))
     
     user = users_collection.find_one({'student_id': session['username']})
     if not user:
-        return redirect(url_for('auth.login'))
-    
-    # If no signature, redirect to canvas
-    if not user.get('signature'):
-        return redirect(url_for('canvas_name'))
+        return redirect(url_for('login'))
     
     # If quiz is completed, show completion page
     if user.get('quiz_completed'):
         return redirect(url_for('completion'))
     
-    # Otherwise, go to test selection/first test
+    # Otherwise, go directly to first test
     return redirect(url_for('test', test_number=1))
-
-@app.route('/canvas_name')
-def canvas_name():
-    if 'username' not in session:
-        return redirect(url_for('auth.login'))
-    return render_template('canvas_name.html')
-
-@app.route('/save_signature', methods=['POST'])
-def save_signature():
-    if 'username' not in session:
-        return jsonify({'success': False, 'error': 'Not logged in'})
-    
-    try:
-        data = request.get_json()
-        signature_data = data.get('signature')
-        
-        if not signature_data:
-            return jsonify({'success': False, 'error': 'No signature data'})
-        
-        # Update user's signature in database
-        users_collection.update_one(
-            {'student_id': session['username']},
-            {'$set': {'signature': signature_data}}
-        )
-        
-        return jsonify({
-            'success': True,
-            'redirect_url': url_for('test', test_number=1)
-        })
-        
-    except Exception as e:
-        print(f"Error saving signature: {e}")
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/reset_signature', methods=['POST'])
-def reset_signature():
-    if 'username' not in session:
-        return redirect(url_for('auth.login'))
-    
-    # Reset the signature in the database
-    users_collection.update_one(
-        {'student_id': session['username']},
-        {'$set': {'signature': None}}
-    )
-    
-    # Redirect to canvas page
-    return redirect(url_for('canvas_name'))
 
 @app.route('/test/<int:test_number>', methods=['GET', 'POST'])
 def test(test_number):

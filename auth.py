@@ -45,21 +45,17 @@ def register():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        student_id = request.form['student_id']
-        password = request.form['password']
+        student_id = request.form.get('student_id')
+        password = request.form.get('password')
+        
         user = users_collection.find_one({'student_id': student_id})
         
         if user and check_password_hash(user['password'], password):
-            session.clear()
             session['username'] = student_id
-            
-            # Check if user has signature
-            if not user.get('signature'):
-                return redirect(url_for('canvas_name'))
-            else:
-                return redirect(url_for('home'))
-                
-        flash('Invalid credentials')
+            return redirect(url_for('test', test_number=1))
+        else:
+            flash('Invalid username or password')
+    
     return render_template('login.html')
 
 @auth_bp.route('/logout', methods=['POST'])
