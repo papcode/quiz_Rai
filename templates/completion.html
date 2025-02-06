@@ -1,131 +1,36 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="completion-container">
-    <div class="completion-card">
-        <div class="completion-message">
-            <i class="fas fa-check-circle completion-icon"></i>
-            <h3>Assessment Completed!</h3>
-            <p>Thank you for completing the career assessment.</p>
-            
-            {% if career_analysis %}
-            <div class="analysis-preview">
-                <h4>Career Analysis Preview:</h4>
-                <p><strong>Primary Recommendation:</strong><br>
-                {{ career_analysis.get('primary_recommendation', 'Analysis in progress...') }}</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h2 class="text-center mb-0">Assessment Complete!</h2>
+                </div>
+                <div class="card-body text-center">
+                    <div class="completion-message my-5">
+                        <h4 class="mb-4">Thank you for completing the quiz!</h4>
+                        <p class="lead">The results have been shared with your administrator for further analysis.</p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <form action="{{ url_for('logout') }}" method="post">
+                            <button type="submit" class="btn btn-primary">Return to Login</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            {% endif %}
-            
-            <p>A detailed report has been sent to the administrator.</p>
-        </div>
-        
-        <div class="action-buttons">
-            <form action="{{ url_for('auth.logout') }}" method="POST">
-                <button type="submit" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
-            </form>
         </div>
     </div>
 </div>
 
 <style>
-.completion-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 60px);
-    padding: 20px;
-}
-
-.completion-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 40px;
-    text-align: center;
-    max-width: 500px;
-    width: 100%;
-}
-
-h1 {
-    color: #4CAF50;
-    margin-bottom: 20px;
-}
-
-p {
-    color: #666;
-    margin-bottom: 15px;
-    font-size: 18px;
-}
-
-.logout-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s;
-}
-
-.logout-btn:hover {
-    background-color: #45a049;
-}
-
-/* Loading overlay styles */
-.loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.loading-content {
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #4CAF50;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading-content p {
-    color: #333;
-    font-size: 18px;
-    margin: 0;
-}
+    .completion-message {
+        padding: 2rem;
+    }
+    .lead {
+        color: #495057;
+    }
 </style>
-
-<script>
-// Show loading overlay immediately
-document.getElementById('loadingOverlay').style.display = 'flex';
-
-// Hide loading overlay after results are sent (3 seconds for demonstration)
-setTimeout(() => {
-    document.getElementById('loadingOverlay').style.display = 'none';
-}, 3000);
-</script>
 {% endblock %} 

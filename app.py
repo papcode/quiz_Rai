@@ -191,7 +191,7 @@ def submit():
         try:
             base_url = config['BASE_URL']
             llm_service = LLMService(base_url)
-            career_analysis = llm_service.get_career_analysis(test_responses)
+            md_filename, career_analysis = llm_service.get_career_analysis(test_responses)
             print("Career analysis completed successfully")
             
             # Save data to JSON file with timestamp
@@ -208,25 +208,19 @@ def submit():
                 os.makedirs('logs')
             
             # Save to JSON file
-            filename = f"logs/career_analysis_{username}_{timestamp}.json"
-            with open(filename, 'w') as f:
+            json_filename = f"logs/career_analysis_{username}_{timestamp}.json"
+            with open(json_filename, 'w') as f:
                 json.dump(data_to_save, f, indent=4)
-            print(f"Data saved to {filename}")
+            print(f"Data saved to {json_filename}")
             
-            # Send email using the same mechanism as test script
+            # Send email with markdown attachment
             smtp_server = config['SMTP_SERVER']
             smtp_port = int(config['SMTP_PORT'])
             sender_email = config['SENDER_EMAIL']
             sender_password = config['SENDER_PASSWORD']
             admin_email = config['ADMIN_EMAIL']
             
-            print(f"""
-            Email configuration:
-            SMTP Server: {smtp_server}
-            SMTP Port: {smtp_port}
-            Sender Email: {sender_email}
-            Admin Email: {admin_email}
-            """)
+            print(f"Preparing email with markdown attachment...")
             
             # Create message
             message = MIMEMultipart()
@@ -234,20 +228,15 @@ def submit():
             message["To"] = admin_email
             message["Subject"] = f"Career Analysis Report - Student: {username}"
             
-            body = f"""
-            Career Analysis Report
-            ---------------------
-            Student Username: {username}
-            Timestamp: {timestamp}
-            
-            Analysis Results:
-            ----------------
-            {career_analysis}
-            
-            This is an automated report from the Career Guidance System.
-            """
-            
-            message.attach(MIMEText(body, "html"))
+            # Add the markdown file as attachment
+            with open(md_filename, 'r', encoding='utf-8') as f:
+                attachment = MIMEText(f.read(), 'markdown')
+                attachment.add_header(
+                    "Content-Disposition",
+                    "attachment",
+                    filename=os.path.basename(md_filename)
+                )
+                message.attach(attachment)
             
             # Create SMTP session
             print("Connecting to SMTP server...")
@@ -282,13 +271,28 @@ def submit():
         flash('An error occurred while processing your responses. Please try again.')
         return redirect(url_for('home'))
 
+
 @app.route('/completion')
 def completion():
     if 'username' not in session:
         return redirect(url_for('auth.login'))
     
-    career_analysis = session.get('career_analysis', {})
-    return render_template('completion.html', career_analysis=career_analysis)
+    try:
+        # Read the latest markdown file for this user
+        reports_dir = 'reports'
+        files = [f for f in os.listdir(reports_dir) if f.endswith('.md')]
+        if files:
+            latest_file = max(files, key=lambda x: os.path.getctime(os.path.join(reports_dir, x)))
+            with open(os.path.join(reports_dir, latest_file), 'r', encoding='utf-8') as f:
+                career_analysis = f.read()
+        else:
+            career_analysis = "Analysis not found. Please try again."
+            
+        return render_template('completion.html', career_analysis=career_analysis)
+    except Exception as e:
+        print(f"Error in completion route: {e}")
+        return render_template('completion.html', 
+                             career_analysis="Error retrieving analysis. Please contact support.")
 
 @app.route('/logout')
 def logout():

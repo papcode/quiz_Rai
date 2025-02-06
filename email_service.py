@@ -1,7 +1,9 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from config.config_reader import load_config
+import os
 
 def send_career_report(username, career_analysis):
     # Load config
@@ -29,19 +31,27 @@ def send_career_report(username, career_analysis):
         message["To"] = admin_email
         message["Subject"] = f"Career Analysis Report - Student: {username}"
         
+        # Add email body
         body = f"""
-        Career Analysis Report
-        ---------------------
-        Student Username: {username}
+        Career Analysis Report for {username}
         
-        Analysis Results:
-        ----------------
-        {career_analysis}
+        Please find the detailed career analysis report attached.
         
         This is an automated report from the Career Guidance System.
         """
+        message.attach(MIMEText(body, "plain"))
         
-        message.attach(MIMEText(body, "html"))
+        # Find and attach the latest markdown file for this user
+        reports_dir = 'reports'
+        files = [f for f in os.listdir(reports_dir) if f.endswith('.md')]
+        if files:
+            latest_file = max(files, key=lambda x: os.path.getctime(os.path.join(reports_dir, x)))
+            file_path = os.path.join(reports_dir, latest_file)
+            
+            with open(file_path, 'rb') as f:
+                attachment = MIMEApplication(f.read(), _subtype="md")
+                attachment.add_header('Content-Disposition', 'attachment', filename=latest_file)
+                message.attach(attachment)
         
         # Create SMTP session with logging
         print("Connecting to SMTP server...")

@@ -1,6 +1,8 @@
 from openai import OpenAI
 from typing import Dict, List, Optional
 import json
+import os
+from datetime import datetime
 
 class LLMServiceError(Exception):
     """Custom exception for LLM service errors"""
@@ -134,36 +136,51 @@ class LLMService:
 
     def get_career_analysis(self, test_responses: Dict[str, List[Dict]]) -> str:
         try:
-            prompt = """Based on the test responses, provide a clear and professional career analysis report.
+            prompt = """Generate a career analysis report in markdown format. 
 
-                    IMPORTANT GUIDELINES:
-                    1. Write in a direct, professional tone.
-                    2. Avoid including any HTML tags, markup, or thinking process.
-                    3. Do not include section numbers or bullet points.
-                    4. Write in clear, structured paragraphs.
-                    5. Focus on actionable career guidance.
+            IMPORTANT FORMATTING REQUIREMENTS:
+            - Use proper markdown syntax for headings, sections, and emphasis
+            - Include clear line breaks between sections
+            - Use bullet points where appropriate
+            - Use emphasis (* or **) for important points
+            - Make the content easily readable and well-structured
 
-                    FORMAT YOUR RESPONSE IN THESE SECTIONS:
+            STRUCTURE YOUR RESPONSE AS FOLLOWS:
 
-                    CAREER DIRECTION AND PRIMARY RECOMMENDATIONS
-                    [Provide 2-3 specific career paths that align with the user's profile, explaining why each is suitable.]
+            # Career Analysis Report
 
-                    SKILLS AND DEVELOPMENT ROADMAP
-                    [List current strengths and specific skills the user needs to develop, with clear, actionable steps.]
+            ## Career Direction and Primary Recommendations
+            [Provide 2-3 specific career paths, with each path as a subsection including:
+            - Role description
+            - Why it's a good fit
+            - Potential positions and companies]
 
-                    EDUCATIONAL RECOMMENDATIONS
-                    [Recommend specific courses, certifications, or training programs the user should pursue.]
+            ## Skills Assessment and Development
+            [Break down into:
+            - Current strengths
+            - Skills to develop
+            - Recommended learning path]
 
-                    PRACTICAL NEXT STEPS
-                    [Outline clear, actionable steps for the user over the next 3 months, 6-12 months, and 2-5 years.]
+            ## Educational Pathway
+            [Include specific recommendations for:
+            - Courses and certifications
+            - Training programs
+            - Expected timeline]
 
-                    WORK ENVIRONMENT AND ADDITIONAL INSIGHTS
-                    [Describe the ideal work environment for the user, considering their preferences and strengths, along with any additional career insights.]
+            ## Action Plan
+            [Break down into clear timeframes:
+            - Immediate steps (3 months)
+            - Short-term goals (6-12 months)
+            - Long-term development (2-5 years)]
 
-                    THE RESPONSE ONLY SHOULD BE IN THE ABOVE FORMAT. NO MARKUP OR THINK TAGS. 
-                    THE RESPONSE SHOULD NOT HAVE ANY COMMENTS OR THINKING PROCESS.
-                    Analyze these test responses and provide your recommendations:
-                    """
+            ## Work Environment Fit
+            [Describe:
+            - Ideal work environment
+            - Company culture preferences
+            - Growth opportunities]
+
+            Analyze these test responses and provide your recommendations in the specified markdown format:
+            """
             
             prompt += str(test_responses)
             
@@ -174,7 +191,7 @@ class LLMService:
                 messages=[
                     {
                         "role": "system", 
-                        "content": "You are a professional career counselor providing clear, direct career guidance. Write in a formal, professional tone without any markup, tags, or meta-commentary."
+                        "content": "You are a professional career counselor creating well-structured markdown reports. Use proper markdown formatting for clear, readable career guidance."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -186,17 +203,20 @@ class LLMService:
             
             career_analysis = response.choices[0].message.content
             
-            # Clean up any remaining markup or think tags
-            career_analysis = career_analysis.replace('<think>', '')
-            career_analysis = career_analysis.replace('</think>', '')
-            # career_analysis = career_analysis.replace('<br>', '\n')
-            # career_analysis = career_analysis.replace('###', '')
-            # career_analysis = career_analysis.replace('**', '')
-            # career_analysis = career_analysis.replace('---', '')
+            # Save as markdown file
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"reports/career_analysis_{timestamp}.md"
             
-            print(f"Cleaned career analysis: {career_analysis}")
+            # Create reports directory if it doesn't exist
+            os.makedirs('reports', exist_ok=True)
             
-            return career_analysis
+            # Save the markdown file
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(career_analysis)
+            
+            print(f"Saved career analysis to {filename}")
+            
+            return filename, career_analysis
             
         except Exception as e:
             print(f"LLM Service Error: {str(e)}")
