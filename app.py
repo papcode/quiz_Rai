@@ -106,21 +106,34 @@ def test(test_number):
                              test_number=test_number,
                              questions=questions)
 
-    # For POST requests - handle form submission
+    # For POST requests
     try:
-        responses = request.get_json()
+        # Get form data
+        form_data = request.form
+        responses = []
+        
+        # Process each answer from the form
+        for i in range(len(form_data)):
+            answer_key = f'answers[{i}]'
+            if answer_key in form_data:
+                responses.append(form_data[answer_key])
+        
         print(f"Received responses for test {test_number}:", responses)
         
+        # Store responses in session
         session[f'test{test_number}_responses'] = responses
         
+        # Determine next action
         if test_number < 4:
-            return jsonify({"next_url": f"/test/{test_number + 1}"})
+            next_test = test_number + 1
+            return redirect(url_for('test', test_number=next_test))
         else:
-            return jsonify({"next_url": "/submit"})
+            return redirect(url_for('submit'))
             
     except Exception as e:
         print(f"Error saving test responses: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        flash('An error occurred while saving your responses. Please try again.')
+        return redirect(url_for('test', test_number=test_number))
 
 @app.route('/results')
 def results():
@@ -276,6 +289,12 @@ def completion():
     
     career_analysis = session.get('career_analysis', {})
     return render_template('completion.html', career_analysis=career_analysis)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been successfully logged out.')
+    return redirect(url_for('auth.login'))
 
 # Helper functions for loading questions and calculating personality type
 def load_questions(file_path, sheet_name):

@@ -399,54 +399,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('quizForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Get all questions and their responses
-        const responses = [];
-        const questionCards = document.querySelectorAll('.question-card');
-        const currentTest = window.location.pathname.split('/').pop();
-        
-        questionCards.forEach(card => {
-            const questionText = card.querySelector('.question-text').textContent;
-            const yesRadio = card.querySelector('input[value="1"]');
-            const noRadio = card.querySelector('input[value="2"]');
-            
-            let answer = null;
-            if (yesRadio.checked) {
-                answer = "yes";
-            } else if (noRadio.checked) {
-                answer = "no";
-            }
-            
-            responses.push({
-                "question": questionText,
-                "answer": answer,
-                "test": `test${currentTest}`
-            });
-        });
-        
-        console.log('Formatted responses:', responses);  // Debug log
-        
-        fetch(window.location.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(responses)
-        })
-        .then(response => {
-            if (response.redirected) {
-                window.location.href = response.url;
-            } else {
-                return response.json().then(data => {
-                    if (data.next_url) {
-                        window.location.href = data.next_url;
-                    }
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('There was an error submitting your answers. Please try again.');
-        });
+        // Submit the form normally
+        this.submit();
     });
 
     updateProgress();

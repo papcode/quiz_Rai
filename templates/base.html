@@ -16,9 +16,7 @@
         </div>
         <div class="right">
             <span class="welcome-text">Welcome, {{ session.username }}</span>
-            <form action="{{ url_for('auth.logout') }}" method="POST" style="display: inline;">
-                <button type="submit" class="logout-button">Logout</button>
-            </form>
+            <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
         </div>
     </div>
     {% endif %}
