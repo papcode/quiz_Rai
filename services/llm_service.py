@@ -10,7 +10,8 @@ class LLMService:
     def __init__(self, base_url: str):
         try:
             self.client = OpenAI(base_url=base_url)
-            self.model = "deepseek-r1-distill-llama-8b"
+            #self.model = "deepseek-r1-distill-llama-8b"
+            self.model = "llama-3.2-1b-instruct"
         except Exception as e:
             raise LLMServiceError(f"Failed to initialize LLM service: {str(e)}")
 
@@ -133,43 +134,36 @@ class LLMService:
 
     def get_career_analysis(self, test_responses: Dict[str, List[Dict]]) -> str:
         try:
-            print("Preparing LLM prompt...")
-            prompt = """Based on the test responses, provide a detailed career analysis following this structure:
+            prompt = """Based on the test responses, provide a clear and professional career analysis report.
 
-            1. CAREER DIRECTION AND PRIMARY RECOMMENDATIONS
-            - Analyze the key strengths and interests shown in the responses
-            - Provide 2-3 specific career paths that best match their profile
-            - For each career path, explain why it's a good fit based on their responses
-            - Include specific roles or positions within these career paths
+                    IMPORTANT GUIDELINES:
+                    1. Write in a direct, professional tone.
+                    2. Avoid including any HTML tags, markup, or thinking process.
+                    3. Do not include section numbers or bullet points.
+                    4. Write in clear, structured paragraphs.
+                    5. Focus on actionable career guidance.
 
-            2. SKILLS AND DEVELOPMENT ROADMAP
-            - List the essential skills they already demonstrate
-            - Identify specific skills they need to develop
-            - Recommend concrete steps for skill development (e.g., specific courses, certifications, or training programs)
-            - Suggest a timeline for skill acquisition
+                    FORMAT YOUR RESPONSE IN THESE SECTIONS:
 
-            3. EDUCATIONAL AND TRAINING RECOMMENDATIONS
-            - Specific degree programs or certifications that align with their career paths
-            - Online courses or bootcamps that would be beneficial
-            - Professional certifications that would add value
-            - Estimated time and resource investment for each recommendation
+                    CAREER DIRECTION AND PRIMARY RECOMMENDATIONS
+                    [Provide 2-3 specific career paths that align with the user's profile, explaining why each is suitable.]
 
-            4. PRACTICAL NEXT STEPS
-            - Immediate actions they can take (within next 3 months)
-            - Medium-term goals (6-12 months)
-            - Long-term career development plan (2-5 years)
-            - Specific companies or organizations to target
+                    SKILLS AND DEVELOPMENT ROADMAP
+                    [List current strengths and specific skills the user needs to develop, with clear, actionable steps.]
 
-            5. ADDITIONAL INSIGHTS
-            - Work environment preferences based on their responses
-            - Leadership potential and development areas
-            - Entrepreneurial indicators (if any)
-            - Work-life balance considerations
+                    EDUCATIONAL RECOMMENDATIONS
+                    [Recommend specific courses, certifications, or training programs the user should pursue.]
 
-            Please provide a comprehensive, actionable analysis that will give the person clear direction for their career development.
+                    PRACTICAL NEXT STEPS
+                    [Outline clear, actionable steps for the user over the next 3 months, 6-12 months, and 2-5 years.]
 
-            Analyze these test responses and provide your detailed recommendations:
-            """
+                    WORK ENVIRONMENT AND ADDITIONAL INSIGHTS
+                    [Describe the ideal work environment for the user, considering their preferences and strengths, along with any additional career insights.]
+
+                    THE RESPONSE ONLY SHOULD BE IN THE ABOVE FORMAT. NO MARKUP OR THINK TAGS. 
+                    THE RESPONSE SHOULD NOT HAVE ANY COMMENTS OR THINKING PROCESS.
+                    Analyze these test responses and provide your recommendations:
+                    """
             
             prompt += str(test_responses)
             
@@ -180,7 +174,7 @@ class LLMService:
                 messages=[
                     {
                         "role": "system", 
-                        "content": "You are an experienced career counselor providing detailed, actionable career guidance. Be specific, practical, and encouraging while maintaining professionalism."
+                        "content": "You are a professional career counselor providing clear, direct career guidance. Write in a formal, professional tone without any markup, tags, or meta-commentary."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -191,13 +185,18 @@ class LLMService:
                 raise Exception("Empty response from LLM")
             
             career_analysis = response.choices[0].message.content
-            print(f"Raw LLM response: {career_analysis}")
             
-            # Format the response for better readability
-            formatted_analysis = career_analysis.replace('\n\n', '<br><br>')
-            formatted_analysis = formatted_analysis.replace('•', '<br>•')
+            # Clean up any remaining markup or think tags
+            career_analysis = career_analysis.replace('<think>', '')
+            career_analysis = career_analysis.replace('</think>', '')
+            # career_analysis = career_analysis.replace('<br>', '\n')
+            # career_analysis = career_analysis.replace('###', '')
+            # career_analysis = career_analysis.replace('**', '')
+            # career_analysis = career_analysis.replace('---', '')
             
-            return formatted_analysis
+            print(f"Cleaned career analysis: {career_analysis}")
+            
+            return career_analysis
             
         except Exception as e:
             print(f"LLM Service Error: {str(e)}")
